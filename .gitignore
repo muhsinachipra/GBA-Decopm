@@ -25,6 +25,10 @@ releases/
 *.exe
 *.dll
 
+# --- Downloaded tool binaries (install root; scripts live in tools/) ---
+/tools/bin/
+/tools/dl/
+
 # --- Ghidra projects and analysis state ---
 *.gpr
 *.rep

@@ -65,7 +65,7 @@
 
 - Working directory `E:\Project\Decopm` contains the ROM (local-only, git-ignored) plus docs and tooling. Git repository is initialized on branch `main` with remote `origin` (GitHub). **Hygiene incident 2026-10-11: an initial commit containing the ROM was pushed to the public remote; it was purged the same day via history rewrite + force-push (see §8.6 Session 002 and `docs/legal.md` §5).**
 - Host environment: Windows (win32), default shell PowerShell 7 (`pwsh`). Python 3.13.7 and Git 2.51.0 available. WSL status unverified (Task P0-02).
-- Research tooling state: recon tooling (`tools/recon/rom_recon.py`) and the No-Intro GBA DAT are in place; Ghidra, mGBA, devkitARM, recompilers still pending (Task P0-08).
+- Research tooling state: core toolchain installed and verified (Ghidra 12.1.4 + JDK 21, mGBA 0.10.5, mstan gbarecomp CLI 0.2.0, objdiff 3.8.2, m2c, MSYS2/MinGW GCC 16.1.0, CMake, Ninja) plus recon tooling and the No-Intro DAT — see §8.4. Track B components (WSL distro, agbcc, devkitARM) are deferred to P6-01.
 
 ---
 
@@ -275,7 +275,7 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 - [x] **P0-05** Dump authenticity verified. Evidence: full-file hashes match No-Intro GBA DAT (2026-07-07) entry `Road Rash - Jailbreak (USA)`; 0xBE is the reserved area (GBATEK), not a checksum; no re-baseline needed. See `docs/recon/nointro_verification.md`.
 - [x] **P0-06** Recon tool committed (`tools/recon/rom_recon.py`); report generated at `docs/recon/rom_recon_report.md` (header/checksums, hashes, entropy map, ARM/Thumb pattern census, keyword string harvest, `--nointro-dat` mode). Evidence: `python tools/recon/rom_recon.py ...` run 2026-10-11.
 - [x] **P0-07** Legal policy + incident log written (`docs/legal.md`): no ROM/BIOS/assets/generated code in VCS or releases; hash-gating; pre-commit checklist.
-- [~] **P0-08** Install toolchain (Section 5) and record versions in §8.4. Partial: No-Intro DAT + recon tooling in place; mGBA, Ghidra (+loader, JDK), gbarecomp CLI, objdiff, m2c, MSYS2, WSL verification pending.
+- [x] **P0-08** Toolchain installed and verified; versions/paths recorded in §8.4. Done: JDK 21 (Temurin), Ghidra 12.1.4 (headless verified), mGBA 0.10.5, mstan gbarecomp CLI 0.2.0, objdiff 3.8.2, m2c (`gba` target), MSYS2 + MinGW GCC 16.1.0, CMake 4.4.4, Ninja 1.13.2. Deferred: WSL distro + agbcc + devkitARM to Track B (P6-01); SDL2 to P3-01.
 
 ### Phase P1 — Static Analysis & Map Building
 - [ ] **P1-01** Install Ghidra (latest stable) + JDK 21; install a GBA loader (`SiD3W4y/GhidraGBA`, or `RetroReversing` precompiled for Ghidra 11.1.2). Evidence: import ROM, discover functions, screenshot of memory map.
@@ -426,7 +426,7 @@ E:\Project\Decopm\
 | ID | Milestone | Target phase | Status | Evidence |
 |---|---|---|---|---|
 | M0 | Research + plan + baseline documented | P0 | `[x]` | RESEARCH_AND_PLAN.md v0.2.0; dump verified vs No-Intro; recon report committed |
-| M1 | Toolchain installed & verified | P0 | `[ ]` | Section 8.4 |
+| M1 | Toolchain installed & verified | P0 | `[x]` | §8.4; headless Ghidra, mGBA, gbarecomp, objdiff, m2c, MSYS2/MinGW all verified 2026-10-11; Track B (WSL/agbcc) deferred to P6-01 |
 | M2 | Static function/data map + entries.txt | P1–P2 | `[ ]` | docs/recon/*, entries.txt |
 | M3 | Native build boots to title screen | P3 | `[ ]` | screenshot + frame log |
 | M4 | In-race gameplay + PPU parity | P3–P4 | `[ ]` | differential runs |
@@ -440,7 +440,7 @@ E:\Project\Decopm\
 
 | Phase | Title | Status | Notes |
 |---|---|---|---|
-| P0 | Scaffolding & baseline | `[~]` | P0-01..P0-07 complete (repo hygiene remediated, dump verified, recon tooled); P0-08 toolchain installs pending |
+| P0 | Scaffolding & baseline | `[x]` | P0-01..P0-08 complete; toolchain verified (§8.4); Track B WSL/agbcc deferred to P6-01 |
 | P1 | Static analysis & map building | `[ ]` | Blocked on tool installs (P0-08) |
 | P2 | Dynamic analysis & coverage | `[ ]` | |
 | P3 | First native bring-up | `[ ]` | |
@@ -475,18 +475,22 @@ E:\Project\Decopm\
 | recon tool (`tools/recon/rom_recon.py`) | working tree | repo | `[x]` 2026-10-11 | header/entropy/patterns/strings + No-Intro mode |
 | No-Intro GBA DAT | build 20260707-143610 | `work/recon/dat/` (local, uncommitted) | `[x]` 2026-10-11 | via `auto-datfile-generator` Daily_Rebuild |
 | GBATEK reference (local copy) | page fetched 2026-10-11 | `work/recon/gbatek.htm` (uncommitted) | `[x]` 2026-10-11 | used for header-layout confirmation |
-| Ghidra | — | — | `[ ]` | + GBA loader extension |
-| mGBA | — | — | `[ ]` | GDB stub + Lua |
-| devkitARM / binutils-arm-none-eabi | — | — | `[ ]` | Track B |
-| agbcc | — | — | `[ ]` | build in WSL |
-| m2c | — | — | `[ ]` | `--target gba` |
-| decomp-permuter (+arm) | — | — | `[ ]` | |
-| objdiff | — | — | `[ ]` | ARM support |
-| gbarecomp CLI (mstan) | — | — | `[ ]` | pin release tag/commit |
-| gbarecomp (sp00nznet) | — | — | `[ ]` | fallback |
-| gba-recomp (JRickey) | — | — | `[ ]` | reference only |
-| MSYS2/MinGW64 + CMake + Ninja + SDL2 | — | — | `[ ]` | Track A host |
-| WSL distro | — | — | `[?]` | verify WSL1 availability |
+| JDK | Temurin 21.0.12.1+1 (LTS) | `C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot` | `[x]` 2026-10-11 | `java -version` OK; required by Ghidra |
+| Ghidra | 12.1.4 PUBLIC 20260921 | `tools\bin\ghidra\ghidra_12.1.4_PUBLIC` | `[x]` 2026-10-11 | `support\analyzeHeadless.bat` usage verified with `JAVA_HOME`; GBA loader extension pending (P1-01) |
+| mGBA | 0.10.5 (portable) | `tools\bin\mgba\mGBA-0.10.5-win64` | `[x]` 2026-10-11 | `mgba-sdl.exe --version` → `0.10.5 (26b7884…)`; GDB stub + Lua for P2/P7 |
+| m2c | git HEAD (cloned 2026-10-11) | `tools\bin\m2c` (`python m2c.py`) | `[x]` 2026-10-11 | `gba` target confirmed (`m2c/options.py`); runs on Python 3.13.7 |
+| objdiff | 3.8.2 (CLI + GUI) | `tools\bin\objdiff` | `[x]` 2026-10-11 | `objdiff-cli.exe --version` → 3.8.2 |
+| gbarecomp CLI (mstan) | v0.2.0 (release pinned) | `tools\bin\gbarecomp\gbarecomp.exe` | `[x]` 2026-10-11 | `gbarecomp 0.2.0`; exposes `build` subcommand (matches §2.4.1) |
+| MSYS2 + MinGW GCC | MSYS2 20260611; GCC 16.1.0; mingw CMake 4.3.3; Ninja 1.13.2 | `C:\msys64\mingw64\bin` | `[x]` 2026-10-11 | installed via `pacman` (49 pkgs); for P3 host build |
+| CMake (host) | 4.4.4 | `C:\Program Files\CMake\bin\cmake.exe` | `[x]` 2026-10-11 | winget |
+| Ninja (host) | 1.13.2 | `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Ninja-build.Ninja_*` | `[x]` 2026-10-11 | winget |
+| SDL2 | — | — | `[ ]` | deferred to P3-01 (vcpkg or FetchContent in host app) |
+| devkitARM / binutils-arm-none-eabi | — | — | `[ ]` | Track B; deferred to P6-01 |
+| agbcc | — | — | `[ ]` | requires WSL distro; deferred to P6-01 |
+| decomp-permuter (+arm) | — | — | `[ ]` | P6-03 |
+| gbarecomp (sp00nznet) | — | — | `[ ]` | fallback (P3-07) |
+| gba-recomp (JRickey) | git reference | — | `[ ]` | reference only; gamedb checked — no coverage of this title |
+| WSL | engine present, default v2 | system | `[~]` 2026-10-11 | **no distro installed** (`wsl -l -v`); needed for Track B (P6-01) |
 
 ### 8.5 Open Questions
 
@@ -523,13 +527,28 @@ E:\Project\Decopm\
 - **gamedb check (Q9):** `JRickey/gba-recomp` `gamedb.sqlite` (CC0, 253 KB) holds 1,281 function rows total and **no** SHA-256 match for this title → no upstream function map for us.
 - Blockers: none. Next actions: see §8.7.
 
+**Session 002 (continued) — 2026-10-11 — P0-08 toolchain install + handoff documentation (agent: Kilo goal session)**
+- Installed and verified (versions/paths in §8.4; downloaded binaries under `tools\bin\` and archives in `tools\dl\` are git-ignored):
+  - Temurin JDK 21.0.12.1+1 — required by Ghidra (`java -version` OK).
+  - Ghidra 12.1.4 PUBLIC 20260921 → `tools\bin\ghidra\ghidra_12.1.4_PUBLIC`; `support\analyzeHeadless.bat` prints usage with `JAVA_HOME` set.
+  - mGBA 0.10.5 portable → `tools\bin\mgba\mGBA-0.10.5-win64`; `mgba-sdl.exe --version` → `0.10.5 (26b7884…)` (GUI `mGBA.exe` ships the debugger + Lua).
+  - mstan gbarecomp CLI v0.2.0 → `tools\bin\gbarecomp\gbarecomp.exe`; `--version` → `0.2.0`; exposes only `build` (matches §2.4.1 CLI).
+  - objdiff 3.8.2 (CLI + GUI) → `tools\bin\objdiff`; `objdiff-cli.exe --version` → 3.8.2.
+  - m2c → `tools\bin\m2c` (git clone); `gba` target confirmed in `m2c/options.py`; runs on Python 3.13.7.
+  - MSYS2 20260611 → `C:\msys64` + mingw-w64 GCC 16.1.0, mingw CMake 4.3.3, Ninja 1.13.2, pkgconf (pacman, 49 packages, 101 MiB download / 677 MiB installed); host CMake 4.4.4 (`C:\Program Files\CMake\bin`) + Ninja 1.13.2 (WinGet) via winget.
+- WSL: engine present (default v2) but **no distro installed** (`wsl -l -v`) → agbcc/devkitARM deferred to P6-01.
+- `.gitignore`: added `/tools/bin/` and `/tools/dl/`.
+- Phase status: **P0 complete** (P0-01…P0-08; milestones M0+M1). Next phase P1 — static analysis, starting with the Ghidra GBA loader import.
+- Handoff note: a fresh session should read §1.1 (baseline), §3 (decisions), §8.4 (tools), §8.6 (latest entries), §8.7 (next actions), then proceed.
+
 ### 8.7 Next Actions (Top Priority Queue)
 
-1. **P0-08** Install core tools and record versions in §8.4: mGBA (oracle), Ghidra + GBA loader (+ JDK 21), mstan gbarecomp CLI, objdiff, m2c; verify WSL availability for Track B.
-2. **P1-01..P1-05** Ghidra project: function inventory, `gba_lib_func_sig` library signature pass, code/data boundary, entry points; import the pattern/string anchors from `docs/recon/rom_recon_report.md`.
-3. **P2-01/P2-02** mGBA GDB stub verification + Lua trace suite skeleton (coverage + MMIO + `0x0E000000` save-chip + IWRAM diff).
+1. **P1-01** Install a GBA loader extension into Ghidra (build `SiD3W4y/GhidraGBA`, or use `RetroReversing` precompiled compatible with Ghidra 12.x / JDK 21); import the ROM; verify function discovery + memory map.
+2. **P1-02..P1-05** Library signature pass (`gba_lib_func_sig`), function inventory export, ARM/Thumb distribution, code/data boundary; anchor the recon strings (`0x01F7D0` level-name blob, GAX block `0x3ED134`, MagicPockets `0x3EE0B8`) via xrefs.
+3. **P2-01/P2-02** mGBA: verify GDB stub (port 2345) and stand up the Lua trace suite skeleton (coverage + MMIO + `0x0E000000` save-chip + IWRAM diff) under `tools/mgba/`.
 4. **P2-04** Scripted playthrough set → dynamic function map → `entries.txt` for the recompiler.
-5. **Optional hardening:** GitHub Support request to purge unreferenced object `e3160957abb1f37c64dc0f7e3c1632e4b89b97f4` (see `docs/legal.md` §5).
+5. **Track B prep (at P6-01):** install a WSL distro (`wsl --install -d Ubuntu`), build `pret/agbcc`, add devkitARM/binutils-arm-none-eabi.
+6. **Optional hardening:** GitHub Support request to purge unreferenced object `e3160957abb1f37c64dc0f7e3c1632e4b89b97f4` (see `docs/legal.md` §5).
 
 ### 8.8 Evidence Index (paths to key artifacts)
 
@@ -542,6 +561,7 @@ E:\Project\Decopm\
 | Recon report | `docs/recon/rom_recon_report.md` | generated 2026-10-11 (hashes, entropy, patterns, strings) |
 | Dump verification | `docs/recon/nointro_verification.md` | No-Intro match, Q1 resolution |
 | Legal policy | `docs/legal.md` | hard rules + incident log |
+| Toolchain (P0-08) | §8.4 table + `tools\bin\` (git-ignored) + `C:\msys64` | installed + verified 2026-10-11 |
 | Function map / entries | (pending) `work/recon/entries.txt` | generated; uncommitted by default |
 | Differential reports | (pending) `docs/verification/` | committed summaries |
 
