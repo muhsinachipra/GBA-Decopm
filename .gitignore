@@ -1,0 +1,58 @@
+# =====================================================================
+# Hard rule (RESEARCH_AND_PLAN.md §2.9, D7): NEVER commit the ROM, BIOS,
+# extracted assets, or ROM-derived generated code. Local inputs only.
+# =====================================================================
+
+# --- ROMs / BIOS / save chips (user-supplied, hash-gated) ---
+*.gba
+*.gb
+*.gbc
+*.sav
+*.srm
+*.fla
+*.eep
+*.bin
+
+# --- Generated / derived artifacts (private by definition) ---
+generated/
+build/
+work/
+releases/
+*.o
+*.obj
+*.lib
+*.a
+*.exe
+*.dll
+
+# --- Ghidra projects and analysis state ---
+*.gpr
+*.rep
+*.prj
+
+# --- Emulator states, traces, dumps ---
+*.ss0
+*.ss1
+*.ss2
+*.ss3
+*.ss4
+*.ss5
+*.ss6
+*.ss7
+*.ss8
+*.ss9
+*.state
+*.state[0-9]
+*.dump
+*.framedump
+
+# --- Python / tooling noise ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- OS noise ---
+Thumbs.db
+Desktop.ini
+.DS_Store
