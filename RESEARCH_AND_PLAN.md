@@ -3,8 +3,8 @@
 > **ROLE OF THIS DOCUMENT:** This file is the single source of truth and persistent context repository for this project. Any AI agent or human joining the project MUST read this file first, and MUST update its tracker sections before ending a work session. Treat it as append-only for history (Section 8) and in-place-updatable for status.
 >
 > **Canonical path:** `E:\Project\Decopm\RESEARCH_AND_PLAN.md`
-> **Document version:** 0.1.0
-> **Last updated:** 2026-10-11 (Session 001 — initial research)
+> **Document version:** 0.2.0
+> **Last updated:** 2026-10-11 (Session 002 — P0 execution: repo-hygiene remediation, dump verification, recon tooling)
 > **Current phase:** P0 (Scaffolding & Baseline) — IN PROGRESS
 
 ---
@@ -35,10 +35,13 @@
 | Game code (0xAC) | `A9RE` |
 | Maker code (0xB0) | `20` (ASCII "20") |
 | Version (0xBC) | `0x00` |
-| Complement check (0xBD) | `0x6A` — **verified OK** (recomputed `0x6A`) |
-| Header checksum (0xBE) | `0x00` — **unusual/zero; dump authenticity should be cross-checked** (Task P0-05) |
+| Complement check (0xBD) | `0x6A` — **verified OK** (recomputed `0x6A`; GBATEK calls this the required header checksum) |
+| Reserved (0xBE–0xBF) | `0x00 0x00` — **normal** (GBATEK: reserved area, zero filled; not a checksum) |
+| CRC32 | `8834af99` |
+| MD5 | `0a4da0bbdad29f2faa5584b49b0a4f5d` |
 | SHA1 | `48150529172ff411e3e1bd38b9a74d8b32e5fa59` |
 | SHA256 | `f0af99188e7ffaf0b0ea95e1503365a7eaf2eac6c9bc01c18c0f5c5ed010d4b6` |
+| Dump verification | **No-Intro verified good dump** (DAT 2026-07-07, entry `Road Rash - Jailbreak (USA)`, serial `A9RE`) — see `docs/recon/nointro_verification.md` |
 | Developer (GBA version) | Magic Pockets (France), per engine string and public credits |
 | Publisher | Electronic Arts |
 | Release | 2003 (US: 2003-09-11) |
@@ -60,9 +63,9 @@
 
 ### 1.3 Repository Context
 
-- Working directory `E:\Project\Decopm` currently contains only the ROM. It is **not yet a git repository** (verified 2026-10-11).
+- Working directory `E:\Project\Decopm` contains the ROM (local-only, git-ignored) plus docs and tooling. Git repository is initialized on branch `main` with remote `origin` (GitHub). **Hygiene incident 2026-10-11: an initial commit containing the ROM was pushed to the public remote; it was purged the same day via history rewrite + force-push (see §8.6 Session 002 and `docs/legal.md` §5).**
 - Host environment: Windows (win32), default shell PowerShell 7 (`pwsh`). Python 3.13.7 and Git 2.51.0 available. WSL status unverified (Task P0-02).
-- Research tooling state: none installed yet (Ghidra, mGBA, devkitARM, recompilers all pending).
+- Research tooling state: recon tooling (`tools/recon/rom_recon.py`) and the No-Intro GBA DAT are in place; Ghidra, mGBA, devkitARM, recompilers still pending (Task P0-08).
 
 ---
 
@@ -212,7 +215,7 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 | C9 | **Framework immaturity/churn** | The three recompilers are young, fast-moving | Pin revisions (submodules); ROM-hash gating; keep a per-tool "adoption log" (Section 8.3) |
 | C10 | **Windows host friction** | Some decomp tooling assumes Unix/WSL; recompilers assume MSYS2/MinGW toolchains | WSL1/2 for make-based stacks (per pret INSTALL); MSYS2/VS2022 for gbarecomp builds; document exact commands |
 | C11 | **Legal** | ROM-derived output must not be distributed | Hard rules in Section 2.9; hash-gated local builds only |
-| C12 | **Dump authenticity** | Header checksum byte is `0x00` | Cross-check against No-Intro/redump hashes; if a better dump surfaces, re-baseline (Task P0-05) |
+| C12 | ~~Dump authenticity~~ **RESOLVED** | Header byte 0xBE is `0x00` | No-Intro full-file hash match confirmed good dump; 0xBE is a reserved zero-filled area per GBATEK (2026-10-11) | No action needed |
 
 ### 2.9 Legal & Distribution Constraints (Read Carefully)
 
@@ -266,13 +269,13 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 
 ### Phase P0 — Scaffolding & Baseline (current)
 - [x] **P0-01** Baseline ROM identity recorded (SHA1/SHA256/size/header) — see §1.1. Evidence: hash + header dump, 2026-10-11.
-- [x] **P0-02** Host capability inventory (Python 3.13.7, Git 2.51.0 present; working dir not a git repo; WSL status unverified). Evidence: `python --version`, `git --version`, `Get-ChildItem`.
-- [~] **P0-03** Write and review this `RESEARCH_AND_PLAN.md` (Session 001 deliverable).
-- [ ] **P0-04** `git init` in `E:\Project\Decopm`; add `.gitignore` that excludes: ROMs (`*.gba`, `*.gb`, `*.sav`), BIOS (`*.bin` except tool configs), `generated/`, `build/`, `work/`, `*.o`, Ghidra projects (`*.gpr`, `*.rep`), emulator states. Commit only: `RESEARCH_AND_PLAN.md`, `.gitignore`, `tools/` scripts, `docs/`.
-- [ ] **P0-05** Verify dump authenticity: cross-check SHA1 against No-Intro/redump databases; investigate zero header checksum (0xBE). If a verified retail dump differs, re-baseline the entire document (§1.1) via a new session-log entry.
-- [ ] **P0-06** Recreate the recon tool as a committed script `tools/recon/rom_recon.py` (header parse, checksum verify, strings harvest with keyword filter, entropy map, pattern census) and commit its *output report* (not the ROM) under `docs/recon/`.
-- [ ] **P0-07** Legal checklist added to repo (`docs/legal.md`): no ROM/BIOS/assets/generated-code in VCS or releases; hash-gating policy.
-- [ ] **P0-08** Install asset below (Section 5) and record exact versions in Section 8.4 (tools table).
+- [x] **P0-02** Host capability inventory (Python 3.13.7, Git 2.51.0 present; WSL status still unverified). Evidence: `python --version`, `git --version`, `Get-ChildItem`.
+- [x] **P0-03** Write and review this `RESEARCH_AND_PLAN.md` (Session 001 deliverable; reviewed and updated in Session 002).
+- [x] **P0-04** `git init` + `.gitignore` (ROMs `*.gba`/`*.gb`/`*.sav`/`*.srm`, BIOS `*.bin`, `generated/`, `build/`, `work/`, `releases/`, `*.o`, Ghidra `*.gpr`/`*.rep`, emulator states). Evidence: `.gitignore` committed; ROM untracked (`git rm --cached`); history rewritten `0dbaf60` → `1faf5c3`; remote force-purged (see §8.6 Session 002).
+- [x] **P0-05** Dump authenticity verified. Evidence: full-file hashes match No-Intro GBA DAT (2026-07-07) entry `Road Rash - Jailbreak (USA)`; 0xBE is the reserved area (GBATEK), not a checksum; no re-baseline needed. See `docs/recon/nointro_verification.md`.
+- [x] **P0-06** Recon tool committed (`tools/recon/rom_recon.py`); report generated at `docs/recon/rom_recon_report.md` (header/checksums, hashes, entropy map, ARM/Thumb pattern census, keyword string harvest, `--nointro-dat` mode). Evidence: `python tools/recon/rom_recon.py ...` run 2026-10-11.
+- [x] **P0-07** Legal policy + incident log written (`docs/legal.md`): no ROM/BIOS/assets/generated code in VCS or releases; hash-gating; pre-commit checklist.
+- [~] **P0-08** Install toolchain (Section 5) and record versions in §8.4. Partial: No-Intro DAT + recon tooling in place; mGBA, Ghidra (+loader, JDK), gbarecomp CLI, objdiff, m2c, MSYS2, WSL verification pending.
 
 ### Phase P1 — Static Analysis & Map Building
 - [ ] **P1-01** Install Ghidra (latest stable) + JDK 21; install a GBA loader (`SiD3W4y/GhidraGBA`, or `RetroReversing` precompiled for Ghidra 11.1.2). Evidence: import ROM, discover functions, screenshot of memory map.
@@ -422,7 +425,7 @@ E:\Project\Decopm\
 
 | ID | Milestone | Target phase | Status | Evidence |
 |---|---|---|---|---|
-| M0 | Research + plan + baseline documented | P0 | `[~]` (this doc) | RESEARCH_AND_PLAN.md v0.1.0 |
+| M0 | Research + plan + baseline documented | P0 | `[x]` | RESEARCH_AND_PLAN.md v0.2.0; dump verified vs No-Intro; recon report committed |
 | M1 | Toolchain installed & verified | P0 | `[ ]` | Section 8.4 |
 | M2 | Static function/data map + entries.txt | P1–P2 | `[ ]` | docs/recon/*, entries.txt |
 | M3 | Native build boots to title screen | P3 | `[ ]` | screenshot + frame log |
@@ -437,7 +440,7 @@ E:\Project\Decopm\
 
 | Phase | Title | Status | Notes |
 |---|---|---|---|
-| P0 | Scaffolding & baseline | `[~]` | Doc written; git init + dump verification pending |
+| P0 | Scaffolding & baseline | `[~]` | P0-01..P0-07 complete (repo hygiene remediated, dump verified, recon tooled); P0-08 toolchain installs pending |
 | P1 | Static analysis & map building | `[ ]` | Blocked on tool installs (P0-08) |
 | P2 | Dynamic analysis & coverage | `[ ]` | |
 | P3 | First native bring-up | `[ ]` | |
@@ -459,6 +462,7 @@ E:\Project\Decopm\
 | D5 | 2026-10-11 | Audio: hardware-fidelity baseline, GAX enhancements later | Verifiability, legal cleanliness | — |
 | D6 | 2026-10-11 | WSL for decomp builds, native Windows for recomp/Ghidra/mGBA | Tooling fit; pret INSTALL guidance | — |
 | D7 | 2026-10-11 | No ROM/BIOS/generated code in VCS ever | Legal hygiene | — |
+| D8 | 2026-10-11 | Dump verification source = No-Intro GBA DAT (daily rebuild mirror `hugo19941994/auto-datfile-generator`); USA revision confirmed a good dump | Reproducible authoritative hash reference; resolves Q1 | — |
 
 *(Future entries: add new rows; if changing D1–D7, add a new row with "Supersedes Dx" and update the roadmap accordingly.)*
 
@@ -467,7 +471,10 @@ E:\Project\Decopm\
 | Tool | Version | Install path | Status | Notes |
 |---|---|---|---|---|
 | Python | 3.13.7 | system | `[x]` verified 2026-10-11 | recon script ran |
-| Git | 2.51.0.windows.1 | system | `[x]` verified 2026-10-11 | repo not initialized yet |
+| Git | 2.51.0.windows.1 | system | `[x]` verified 2026-10-11 | repo initialized on `main`; hygiene remediation 2026-10-11 |
+| recon tool (`tools/recon/rom_recon.py`) | working tree | repo | `[x]` 2026-10-11 | header/entropy/patterns/strings + No-Intro mode |
+| No-Intro GBA DAT | build 20260707-143610 | `work/recon/dat/` (local, uncommitted) | `[x]` 2026-10-11 | via `auto-datfile-generator` Daily_Rebuild |
+| GBATEK reference (local copy) | page fetched 2026-10-11 | `work/recon/gbatek.htm` (uncommitted) | `[x]` 2026-10-11 | used for header-layout confirmation |
 | Ghidra | — | — | `[ ]` | + GBA loader extension |
 | mGBA | — | — | `[ ]` | GDB stub + Lua |
 | devkitARM / binutils-arm-none-eabi | — | — | `[ ]` | Track B |
@@ -485,7 +492,7 @@ E:\Project\Decopm\
 
 | # | Question | Impact | How to answer | Status |
 |---|---|---|---|---|
-| Q1 | Is the header checksum `0x00` normal for this dump; is there a better verified dump? | Baseline validity | No-Intro/redump lookup (P0-05) | OPEN |
+| Q1 | Is the header checksum `0x00` normal for this dump; is there a better verified dump? | Baseline validity | No-Intro/redump lookup (P0-05) | **RESOLVED 2026-10-11**: full-file hashes match No-Intro DAT exactly (good dump); 0xBE is a reserved zero-filled area per GBATEK, not a checksum; plan wording corrected |
 | Q2 | Which compiler/toolchain built the game (for Track B matching)? | Track B fidelity | Fingerprint with objdiff + candidate compilers (P6-02) | OPEN |
 | Q3 | Save chip type? | Runtime correctness | mGBA `0x0E000000` trace (P2-06) | OPEN |
 | Q4 | How much code is ARM vs Thumb, and where is IWRAM-installed code? | Coverage strategy | P1-04, P2-02 | OPEN |
@@ -493,6 +500,7 @@ E:\Project\Decopm\
 | Q6 | Does the game use link-cable or any cartridge GPIO? | Scope | P2-02 MMIO/serial traces | OPEN |
 | Q7 | Does mstan/gbarecomp resolve this ROM cleanly without custom entries? | Track A feasibility | P3-02..P3-06 | OPEN |
 | Q8 | Does m2c parse Thumb-heavy GNU as output for this target cleanly? | Track B velocity | P6-03 trial | OPEN |
+| Q9 | Does `JRickey/gba-recomp` `gamedb.sqlite` cover this title? | Track A reference value | Query gamedb by SHA-256 (done 2026-10-11) | **NO** — DB holds only 1,281 function rows and no SHA-256 match; the mapped game is not ours. Keep framework as design reference only (P9-03). |
 
 ### 8.6 Session Log (append-only)
 
@@ -506,13 +514,22 @@ E:\Project\Decopm\
 
 *(Append new sessions below. Format: `**Session NNN — YYYY-MM-DD — <title> (agent: <id>)**` + bullets for done/evidence/blockers/next.)*
 
+**Session 002 — 2026-10-11 — P0 execution: repo-hygiene remediation, dump verification, recon tooling (agent: Kilo goal session)**
+- **CRITICAL — repo hygiene incident + remediation.** Inherited state: the public GitHub repo `muhsinachipra/GBA-Decopm` contained the copyrighted ROM, committed and pushed at 06:48 UTC (commit `0dbaf60`). Actions taken: added `.gitignore`; `git rm --cached` the ROM; amended the initial commit → `1faf5c3` (no ROM); `git push --force-with-lease origin main` succeeded. Verified: remote `main` = `.gitignore` + `RESEARCH_AND_PLAN.md` only; raw ROM URL on `main` returns 404; remote had 0 forks. Residual risk: unreferenced git objects may remain fetchable by exact SHA until GitHub GC (old commit `0dbaf60`, blob `e3160957abb1f37c64dc0f7e3c1632e4b89b97f4`) — see `docs/legal.md` §5.
+- **P0-01/P0-05 — dump authenticity RESOLVED (Q1 closed).** Full-file hashes match the No-Intro GBA DAT (build 20260707-143610; source `hugo19941994/auto-datfile-generator` Daily_Rebuild): entry `Road Rash - Jailbreak (USA)`, CRC32 `8834af99`, MD5 `0a4da0bbdad29f2faa5584b49b0a4f5d`, SHA1 `48150529172ff411e3e1bd38b9a74d8b32e5fa59`, serial `A9RE`. GBATEK confirmed: 0xBD complement check is the required header checksum (stored 0x6A = recomputed 0x6A), and 0xBE–0xBF is a reserved zero-filled area — the earlier "zero header checksum" concern was a mislabel; no re-baseline needed. Europe variant is a different dump (serial `A9RP`). Evidence: `docs/recon/nointro_verification.md`.
+- **P0-06 — recon tool committed.** `tools/recon/rom_recon.py` (header/checksum parse incl. entry-point decode, hashes, 64 KiB entropy map, ARM/Thumb pattern census, keyword string harvest, `--nointro-dat` cross-check). Report committed: `docs/recon/rom_recon_report.md`. Results: Thumb `PUSH {…,lr}` = 4,478 (matches Session 001 exactly); `SUB sp` candidates 2,939; ARM `STMFD sp!` 13; entropy shape reproduces §2.7 (first MiB ≈ 7.8–8.0, tail 4.18). String anchors: GAX 3.03A block at `0x3ED134`+, `* Engine by www.MagicPockets.com*` ×5 at `0x3EE0B8`, level-name relative-offset blob around `0x01F7D0` (`Pacific Highway`, `Suburban Dump`, `WILD`, `COP`, `MUL-PLAYER`, `SURVIVA…`, German variants) for P1-07.
+- **P0-07 — legal policy written.** `docs/legal.md`: hard rules, allowed paths, hash-gating, incident log, pre-commit checklist.
+- **P0-08 — partial.** No-Intro DAT + recon tooling in place; mGBA/Ghidra/gbarecomp/objdiff/m2c/MSYS2/WSL still pending (see §8.7).
+- **gamedb check (Q9):** `JRickey/gba-recomp` `gamedb.sqlite` (CC0, 253 KB) holds 1,281 function rows total and **no** SHA-256 match for this title → no upstream function map for us.
+- Blockers: none. Next actions: see §8.7.
+
 ### 8.7 Next Actions (Top Priority Queue)
 
-1. **P0-04** `git init` + `.gitignore` (exclude ROM/BIOS/derived artifacts) and commit this document.
-2. **P0-08** Install core tools: Ghidra (+GBA loader), mGBA, devkitARM/binutils; verify each (record in §8.4).
-3. **P0-05** Verify dump authenticity against No-Intro/redump (Q1).
-4. **P1-01..P1-05** Ghidra project: function inventory, library signature pass, code/data boundary, entry points.
-5. **P2-02** mGBA Lua trace suite skeleton (coverage + MMIO + IWRAM diff), then run first scripted playthrough for the function map (P2-04).
+1. **P0-08** Install core tools and record versions in §8.4: mGBA (oracle), Ghidra + GBA loader (+ JDK 21), mstan gbarecomp CLI, objdiff, m2c; verify WSL availability for Track B.
+2. **P1-01..P1-05** Ghidra project: function inventory, `gba_lib_func_sig` library signature pass, code/data boundary, entry points; import the pattern/string anchors from `docs/recon/rom_recon_report.md`.
+3. **P2-01/P2-02** mGBA GDB stub verification + Lua trace suite skeleton (coverage + MMIO + `0x0E000000` save-chip + IWRAM diff).
+4. **P2-04** Scripted playthrough set → dynamic function map → `entries.txt` for the recompiler.
+5. **Optional hardening:** GitHub Support request to purge unreferenced object `e3160957abb1f37c64dc0f7e3c1632e4b89b97f4` (see `docs/legal.md` §5).
 
 ### 8.8 Evidence Index (paths to key artifacts)
 
@@ -520,7 +537,11 @@ E:\Project\Decopm\
 |---|---|---|
 | This plan | `E:\Project\Decopm\RESEARCH_AND_PLAN.md` | source of truth |
 | ROM baseline report | §1.1 of this file; regenerate via P0-06 | hashes + header |
-| Recon findings | §2.7 of this file | to be re-run as committed script (P0-06) |
+| Recon findings | §2.7 of this file | superseded by committed script (P0-06) |
+| Recon tool | `tools/recon/rom_recon.py` | committed 2026-10-11 |
+| Recon report | `docs/recon/rom_recon_report.md` | generated 2026-10-11 (hashes, entropy, patterns, strings) |
+| Dump verification | `docs/recon/nointro_verification.md` | No-Intro match, Q1 resolution |
+| Legal policy | `docs/legal.md` | hard rules + incident log |
 | Function map / entries | (pending) `work/recon/entries.txt` | generated; uncommitted by default |
 | Differential reports | (pending) `docs/verification/` | committed summaries |
 
