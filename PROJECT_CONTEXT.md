@@ -1,10 +1,10 @@
-# Road Rash: Jailbreak (GBA) — Research & Execution Plan
+# Road Rash: Jailbreak (GBA) — Project Context
 
 > **ROLE OF THIS DOCUMENT:** This file is the single source of truth and persistent context repository for this project. Any AI agent or human joining the project MUST read this file first, and MUST update its tracker sections before ending a work session. Treat it as append-only for history (Section 8) and in-place-updatable for status.
 >
-> **Canonical path:** `E:\Project\Decopm\RESEARCH_AND_PLAN.md`
-> **Document version:** 0.2.0
-> **Last updated:** 2026-10-11 (Session 002 — P0 execution: repo-hygiene remediation, dump verification, recon tooling)
+> **Canonical path:** `E:\Project\Decopm\PROJECT_CONTEXT.md`
+> **Document version:** 0.2.4
+> **Last updated:** 2026-10-12 (Session 006 — documentation commit preparation)
 > **Current phase:** P0 (Scaffolding & Baseline) — IN PROGRESS
 
 ---
@@ -399,7 +399,9 @@ Homebrew-style extras for Track B: `decomp-permuter` (with `laqieer/decomp-permu
 
 ```
 E:\Project\Decopm\
-├─ RESEARCH_AND_PLAN.md          # THIS FILE (source of truth)
+├─ README.md                     # project introduction and getting started
+├─ AGENTS.md                     # agent working instructions
+├─ PROJECT_CONTEXT.md            # THIS FILE (source of truth)
 ├─ .gitignore                    # excludes ROM/BIOS/generated/work
 ├─ Road Rash - Jailbreak (USA).gba   # local only, NEVER committed
 ├─ docs/
@@ -541,6 +543,29 @@ E:\Project\Decopm\
 - Phase status: **P0 complete** (P0-01…P0-08; milestones M0+M1). Next phase P1 — static analysis, starting with the Ghidra GBA loader import.
 - Handoff note: a fresh session should read §1.1 (baseline), §3 (decisions), §8.4 (tools), §8.6 (latest entries), §8.7 (next actions), then proceed.
 
+**Session 003 — 2026-10-12 — Project context document rename (agent: Codex)**
+- Renamed `RESEARCH_AND_PLAN.md` to `PROJECT_CONTEXT.md` to reflect its role as the persistent project source of truth, including research, decisions, roadmap, status, and handoff history.
+- Updated the document title, canonical path, repository layout, evidence index, and active references in `docs/legal.md` and `docs/recon/nointro_verification.md`. Preserved historical deliverable, milestone, and incident references to the original filename.
+- Evidence: `git diff --stat` and a repository search for `RESEARCH_AND_PLAN` confirm the rename and that remaining references describe historical events or this rename.
+- Blockers: none. Next actions: unchanged; see §8.7.
+
+**Session 004 — 2026-10-12 — Repository agent instructions (agent: Codex)**
+- Created root `AGENTS.md` with reading order, project direction, ROM hash verification, repository artifact rules, evidence requirements, and session handoff instructions. Detailed research, hashes, decisions, and progress remain in `PROJECT_CONTEXT.md`.
+- Added `AGENTS.md` to the repository layout and corrected the active filename reference in `.gitignore` missed during Session 003.
+- Evidence: `Get-FileHash` with SHA1 and SHA256 matched Section 1.1; reviewed `AGENTS.md` against the context and legal policy, verified its two document links resolve, and ran `git diff --check`.
+- Blockers: none. Roadmap/tracker statuses and next priorities are unchanged; see §8.7.
+
+**Session 005 — 2026-10-12 — Repository README (agent: Codex)**
+- Created `README.md` with the project goal, current development status, documentation links, local reconnaissance commands, and contributor/artifact rules. Added it to the repository layout.
+- Evidence: ROM SHA1/SHA256 matched Section 1.1; verified the documented script options with `--help`, generated a local report using the README command, checked README link targets, and ran `git diff --check`.
+- Blockers: none. Roadmap/tracker statuses and next priorities are unchanged; see §8.7.
+
+**Session 006 — 2026-10-12 — Documentation commit preparation (agent: Codex)**
+- Reviewed the document rename, README, agent instructions, and active reference updates for the user-requested commit and push to `origin/main`.
+- Evidence: `git diff --check` passed; `git check-ignore` confirmed the ROM, a BIOS filename, and the local recon report are ignored; recomputed ROM SHA1/SHA256 matched Section 1.1. Reviewed README and AGENTS.md content against the project context and legal policy.
+- Publication scope is documentation and the `.gitignore` comment only; local ROMs, downloaded tools, and generated reports are excluded. Commit/push results are recorded by Git and the chat handoff.
+- Blockers: none at preparation. Next actions: verify the pushed commit; project priorities remain in §8.7.
+
 ### 8.7 Next Actions (Top Priority Queue)
 
 1. **P1-01** Install a GBA loader extension into Ghidra (build `SiD3W4y/GhidraGBA`, or use `RetroReversing` precompiled compatible with Ghidra 12.x / JDK 21); import the ROM; verify function discovery + memory map.
@@ -554,7 +579,7 @@ E:\Project\Decopm\
 
 | Artifact | Path | Note |
 |---|---|---|
-| This plan | `E:\Project\Decopm\RESEARCH_AND_PLAN.md` | source of truth |
+| Project context | `E:\Project\Decopm\PROJECT_CONTEXT.md` | source of truth |
 | ROM baseline report | §1.1 of this file; regenerate via P0-06 | hashes + header |
 | Recon findings | §2.7 of this file | superseded by committed script (P0-06) |
 | Recon tool | `tools/recon/rom_recon.py` | committed 2026-10-11 |

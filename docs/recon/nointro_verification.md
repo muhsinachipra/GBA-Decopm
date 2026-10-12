@@ -1,6 +1,6 @@
 # Dump Authenticity Verification (P0-05)
 
-Date: 2026-10-11 (Session 002). Resolves open question Q1 from `RESEARCH_AND_PLAN.md` §8.5.
+Date: 2026-10-11 (Session 002). Resolves open question Q1 from `PROJECT_CONTEXT.md` §8.5.
 
 ## Method
 

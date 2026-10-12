@@ -1,5 +1,5 @@
 # =====================================================================
-# Hard rule (RESEARCH_AND_PLAN.md §2.9, D7): NEVER commit the ROM, BIOS,
+# Hard rule (PROJECT_CONTEXT.md §2.9, D7): NEVER commit the ROM, BIOS,
 # extracted assets, or ROM-derived generated code. Local inputs only.
 # =====================================================================
 

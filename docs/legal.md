@@ -23,7 +23,7 @@ Effective 2026-10-11. Applies to every contributor (human or AI agent) and every
   - SHA256 `f0af99188e7ffaf0b0ea95e1503365a7eaf2eac6c9bc01c18c0f5c5ed010d4b6`
   - CRC32 `8834af99`, MD5 `0a4da0bbdad29f2faa5584b49b0a4f5d`, 4,194,304 bytes.
 - Verified against the No-Intro DAT (2026-07-07): `Road Rash - Jailbreak (USA)`, serial `A9RE`. See `docs/recon/nointro_verification.md`.
-- If recomputed hashes differ from the above, STOP, log the discrepancy in `RESEARCH_AND_PLAN.md` §8.6, and do not proceed.
+- If recomputed hashes differ from the above, STOP, log the discrepancy in `PROJECT_CONTEXT.md` §8.6, and do not proceed.
 
 ## 4. Public release pattern (if ever)
 
