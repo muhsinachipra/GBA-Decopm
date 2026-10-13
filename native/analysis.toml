@@ -1,0 +1,104 @@
+# Reviewed relocation: byte-identical IWRAM observation at frame 10,
+# corroborated by the cartridge startup IRQ-dispatch routine.
+[[code_copy]]
+runtime_start = 0x03003D28
+source_start = 0x0800015C
+size = 0x38
+name = "irq_dispatch_copy"
+note = "Boot installs the IRQ dispatcher in IWRAM; includes its two literals"
+
+[[extra_func]]
+addr = 0x03003D28
+source_addr = 0x0800015C
+mode = "arm"
+name = "rrj_iwram_irq_dispatch"
+note = "Observed first strict-static miss; ROM backing verified by RAM comparison"
+
+[[code_copy]]
+runtime_start = 0x030032C0
+source_start = 0x08306AAC
+size = 0x3B8
+name = "boot_arm_copy"
+note = "Byte-identical range observed at frame 120; second IWRAM strict-static miss"
+
+[[extra_func]]
+addr = 0x030032C0
+source_addr = 0x08306AAC
+mode = "arm"
+name = "rrj_iwram_032c0"
+note = "Observed executed ARM entry within the verified immutable ROM copy"
+
+[[extra_func]]
+addr = 0x0831D168
+mode = "arm"
+name = "rrj_unsigned_multiply_high"
+note = "Observed strict-static ARM miss; reviewed five-instruction leaf ending in BX lr"
+
+[[code_copy]]
+runtime_start = 0x020010F4
+source_start = 0x0831D17C
+size = 0x12C
+name = "audio_arm_copy"
+note = "Reviewed ARM audio span; mutable shift and condition fields handled by ram_fields.py"
+
+[[extra_func]]
+addr = 0x020010F4
+source_addr = 0x0831D17C
+mode = "arm"
+name = "rrj_ewram_mix_10f4"
+note = "Observed strict-static ARM miss at frame before title"
+
+[[extra_func]]
+addr = 0x02001168
+source_addr = 0x0831D1F0
+mode = "arm"
+name = "rrj_ewram_mix_1168"
+note = "Second reviewed ARM entry in the same relocated block"
+
+[[code_copy]]
+runtime_start = 0x02000FD4
+source_start = 0x0831CE80
+size = 0x120
+name = "audio_arm_helper_copy"
+note = "Immutable 0x120-byte audio helper, verified against EWRAM at frame 600"
+
+[[extra_func]]
+addr = 0x02000FD4
+source_addr = 0x0831CE80
+mode = "arm"
+name = "rrj_ewram_audio_0fd4"
+note = "Observed strict-static ARM miss; disassembly reviewed through return"
+
+[[code_copy]]
+runtime_start = 0x0300367C
+source_start = 0x08305D18
+size = 0x610
+name = "second_iwram_arm_copy"
+note = "Immutable IWRAM region verified against frame-600 RAM capture"
+
+[[extra_func]]
+addr = 0x03003AFC
+source_addr = 0x08306198
+mode = "arm"
+name = "rrj_iwram_3afc"
+note = "Observed strict-static ARM miss while advancing beyond frame 600"
+
+[[code_copy]]
+runtime_start = 0x03003C90
+source_start = 0x08305C84
+size = 0x94
+name = "race_menu_iwram_copy"
+note = "Immutable IWRAM span observed on the first race-selection screen"
+
+[[extra_func]]
+addr = 0x03003C90
+source_addr = 0x08305C84
+mode = "arm"
+name = "rrj_iwram_3c90"
+note = "Observed strict-static ARM miss after player selection"
+
+[[extra_func]]
+addr = 0x083184FC
+mode = "thumb"
+name = "rrj_race_callback_3184fc"
+note = "Observed strict-static Thumb miss during first-race bring-up; reviewed function boundary"

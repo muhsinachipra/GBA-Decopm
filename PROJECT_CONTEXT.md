@@ -3,9 +3,9 @@
 > **ROLE OF THIS DOCUMENT:** This file is the single source of truth and persistent context repository for this project. Any AI agent or human joining the project MUST read this file first, and MUST update its tracker sections before ending a work session. Treat it as append-only for history (Section 8) and in-place-updatable for status.
 >
 > **Canonical path:** `E:\Project\Decopm\PROJECT_CONTEXT.md`
-> **Document version:** 0.2.4
-> **Last updated:** 2026-10-12 (Session 006 — documentation commit preparation)
-> **Current phase:** P0 (Scaffolding & Baseline) — IN PROGRESS
+> **Document version:** 0.3.0
+> **Last updated:** 2026-10-13 (Session 007 — native bring-up checkpoint and commit)
+> **Current phase:** P3 (First Native Bring-up) — IN PROGRESS; native title/menu milestone verified
 
 ---
 
@@ -267,9 +267,9 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 > Status legend: `[ ]` TODO · `[~]` IN PROGRESS · `[!]` BLOCKED · `[x]` DONE · `[-]` DROPPED · `[?]` NEEDS INVESTIGATION. Keep this section in sync with Section 8.2.
 > Task IDs are stable; add new tasks with the next free number in the phase. Never renumber.
 
-### Phase P0 — Scaffolding & Baseline (current)
+### Phase P0 — Scaffolding & Baseline (complete)
 - [x] **P0-01** Baseline ROM identity recorded (SHA1/SHA256/size/header) — see §1.1. Evidence: hash + header dump, 2026-10-11.
-- [x] **P0-02** Host capability inventory (Python 3.13.7, Git 2.51.0 present; WSL status still unverified). Evidence: `python --version`, `git --version`, `Get-ChildItem`.
+- [x] **P0-02** Host capability inventory (Python 3.13.7, Git 2.51.0 present; WSL engine present, no distro installed; deferred to P6-01). Evidence: `python --version`, `git --version`, `Get-ChildItem`.
 - [x] **P0-03** Write and review this `RESEARCH_AND_PLAN.md` (Session 001 deliverable; reviewed and updated in Session 002).
 - [x] **P0-04** `git init` + `.gitignore` (ROMs `*.gba`/`*.gb`/`*.sav`/`*.srm`, BIOS `*.bin`, `generated/`, `build/`, `work/`, `releases/`, `*.o`, Ghidra `*.gpr`/`*.rep`, emulator states). Evidence: `.gitignore` committed; ROM untracked (`git rm --cached`); history rewritten `0dbaf60` → `1faf5c3`; remote force-purged (see §8.6 Session 002).
 - [x] **P0-05** Dump authenticity verified. Evidence: full-file hashes match No-Intro GBA DAT (2026-07-07) entry `Road Rash - Jailbreak (USA)`; 0xBE is the reserved area (GBATEK), not a checksum; no re-baseline needed. See `docs/recon/nointro_verification.md`.
@@ -280,29 +280,29 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 ### Phase P1 — Static Analysis & Map Building
 - [ ] **P1-01** Install Ghidra (latest stable) + JDK 21; install a GBA loader (`SiD3W4y/GhidraGBA`, or `RetroReversing` precompiled for Ghidra 11.1.2). Evidence: import ROM, discover functions, screenshot of memory map.
 - [ ] **P1-02** Apply `laqieer/gba_lib_func_sig` signatures (IDA/radare2/RetDec/Ghidra formats) to auto-name common library functions; record which libraries are detected (Nintendo SDK? libgcc? commercial middleware?).
-- [ ] **P1-03** Produce the initial function inventory: count, address ranges, ARM/Thumb split, size histogram. Export as `docs/recon/ghidra_functions.csv` (address,name,mode,size) — this file is generated analysis (derived from ROM): keep local/uncommitted unless deemed safe; default **uncommitted**.
-- [ ] **P1-04** Confirm ARM/Thumb distribution with proper disassembly (replace the heuristic census in §2.7). Identify ARM-only regions (expect IWRAM trampolines, IRQ, GAX).
+- [~] **P1-03** Produce the initial function inventory: count, address ranges, ARM/Thumb split, size histogram. Export as `docs/recon/ghidra_functions.csv` (address,name,mode,size) — this file is generated analysis (derived from ROM): keep local/uncommitted unless deemed safe; default **uncommitted**. Interim analyzer count: 3,873 candidates; full Ghidra export remains pending (Session 007).
+- [~] **P1-04** Confirm ARM/Thumb distribution with proper disassembly (replace the heuristic census in §2.7). Identify ARM-only regions (expect IWRAM trampolines, IRQ, GAX). Six reviewed ROM-backed RAM copies and observed ARM/Thumb entries identified; full distribution remains pending (Session 007).
 - [ ] **P1-05** Map the code/data boundary: identify main entry (ROM header entry point), IRQ vector table (copied to `0x03007F00`), runtime library layout, and the engine's top-level dispatch.
 - [ ] **P1-06** Data-format recon (static): confirm compression signatures in the high-entropy regions; check for BIOS LZ77/RLE/Huffman headers (first byte type + 24-bit length) at blob offsets; list candidate blob table.
 - [ ] **P1-07** String cross-reference: anchor level names (`Pacific Highway`, `Suburban Dump`, …) to code/data via Ghidra xrefs; locate the level table and mode strings.
 
 ### Phase P2 — Dynamic Analysis & Function Coverage
-- [ ] **P2-01** Install mGBA (latest); verify GDB stub (`Tools → Start GDB Server`, port 2345) with gdb-multiarch or devkitARM gdb: `set architecture arm`, `set arm fallback-mode thumb`, `target remote localhost:2345`.
-- [ ] **P2-02** Build an mGBA **Lua trace suite** under `tools/mgba/`: (a) code-coverage logger (log PC ranges executed during scripted playthroughs); (b) MMIO write logger (DISPCNT/BLDCNT/DMA/IRQ/FIFO); (c) `0x0E000000` save-chip access logger; (d) IWRAM snapshot/diff to detect RAM-installed code at boot and at runtime.
-- [ ] **P2-03** Scripted playthrough set (input macros → savestates): boot/title/idle, enter race, crash, menu, save, load. Store just the input scripts + savestate *hash* (not state files) in repo.
-- [ ] **P2-04** Fuse coverage into a function map: annotate every Ghidra function as seen/not-seen; produce `entries.txt` (extra entry points for the recompiler) from indirect-dispatch targets observed dynamically.
-- [ ] **P2-05** Identify the **GAX driver** memory footprint: locate IWRAM-resident GAX code, its song/instrument tables, and FIFO A/B feeding pattern; document in `docs/findings/audio_gax.md`.
+- [~] **P2-01** Install mGBA (latest); verify GDB stub (`Tools → Start GDB Server`, port 2345) with gdb-multiarch or devkitARM gdb: `set architecture arm`, `set arm fallback-mode thumb`, `target remote localhost:2345`. GDB probe scaffold added; headless SDL handshake timed out (Session 007).
+- [~] **P2-02** Build an mGBA **Lua trace suite** under `tools/mgba/`: (a) code-coverage logger (log PC ranges executed during scripted playthroughs); (b) MMIO write logger (DISPCNT/BLDCNT/DMA/IRQ/FIFO); (c) `0x0E000000` save-chip access logger; (d) IWRAM snapshot/diff to detect RAM-installed code at boot and at runtime. Interim native TCP capture exists; independent mGBA trace suite remains pending (Session 007).
+- [~] **P2-03** Scripted playthrough set (input macros → savestates): boot/title/idle, enter race, crash, menu, save, load. Store just the input scripts + savestate *hash* (not state files) in repo. Native menu/race input schedules added; boot/menu checkpoints verified; mGBA state anchors pending (Session 007).
+- [~] **P2-04** Fuse coverage into a function map: annotate every Ghidra function as seen/not-seen; produce `entries.txt` (extra entry points for the recompiler) from indirect-dispatch targets observed dynamically. Observed entries/copy metadata feed native/analysis.toml; full map fusion pending (Session 007).
+- [~] **P2-05** Identify the **GAX driver** memory footprint: locate IWRAM-resident GAX code, its song/instrument tables, and FIFO A/B feeding pattern; document in `docs/findings/audio_gax.md`. Relocated audio code/mutable operands identified; full GAX state/FIFO evidence pending (Session 007).
 - [ ] **P2-06** Determine the **save type** (EEPROM vs Flash vs SRAM) via `0x0E000000` access pattern; verify by saving in-game under mGBA and diffing the `.sav`.
 - [ ] **P2-07** Capture decompressed asset dumps (from VRAM/palette/OAM/RAM at stable points) as *research references* under a local-only, uncommitted `work/assets/` folder.
 - [ ] **P2-08** Confirm PPU feature set actually used: enumerate BG modes, affine usage, window/blend/mosaic usage across scenes (from MMIO logs). Output: `docs/findings/ppu_usage.md` — drives runtime work in P4.
 
 ### Phase P3 — First Native Bring-up (Track A)
-- [ ] **P3-01** Install MSYS2/MinGW64 + CMake + Ninja + SDL2 (vcpkg or MSYS2 packages) per `gbarecomp` docs. Verify a hello-world CMake+SDL2 build.
-- [ ] **P3-02** Download `gbarecomp-cli-windows-x86_64.zip` (mstan/gbarecomp release); pin its version in §8.4. Generate a project: `.\gbarecomp.exe build --rom "...\Road Rash - Jailbreak (USA).gba" --output "work\RRJ_recomp"`.
-- [ ] **P3-03** Build generated library (`build.ps1` → `gbarecomp_game.lib`). Resolve compile errors; log any generated-code gaps.
-- [ ] **P3-04** Assemble a minimal host app + `game.toml` cartridge config using the closest public game repo (e.g. `MarioKartSuperCircuitRecomp`) as the reference; get the game to **boot to the Magic Pockets/EA logo** and reach the title screen. Evidence: screenshot + frame log.
-- [ ] **P3-05** Turn on coverage instrumentation (`GBARECOMP_STRICT_STATIC=1` for coverage burn-down runs; healing cache off; interpreter traces on) and record **static coverage %** as a tracked baseline metric.
-- [ ] **P3-06** Feed `entries.txt` (P2-04) into analysis; re-generate; record coverage delta.
+- [x] **P3-01** Windows toolchain + SDL2 verified. SDL2 2.32.10 installed; CMake/Ninja/MinGW built the host. Bounded SDL window: 120 frames at 59.668 fps, zero unmapped/unhandled IO accesses. Evidence: `work/native/window120.log`, Session 007.
+- [x] **P3-02** Generate the hash-gated project. Corrected CLI entry to `0x080000C8`; source framework pinned at `5e89943528aee7bc1c399bdbd035364a4b41dd10`. `tools/recomp/build.py` generates 64 shards with reviewed metadata under ignored `work/native/`.
+- [x] **P3-03** Build native library and host. Corrected CLI library: `work/RRJ_entry_recomp/build/libgbarecomp_game.a`. Latest host rebuild succeeded: `work/native/build/RoadRashJailbreakRecomp.exe`; logs in `work/native/`.
+- [x] **P3-04** Hand-written Windows host and cartridge identity/configuration reach title at 600 frames, main menu at 932, and Wild Race course selection at 1,238 under strict static dispatch. Experimental open-source BIOS backend; independent mGBA qualification remains open. Evidence: `docs/verification/native_bringup.md`.
+- [~] **P3-05** Strict-static burn-down active. Verified boot/menu scenarios have zero dispatch misses/interpreted fallback instructions with healing/cache disabled. Global executed-function/PC coverage percentages remain unmeasured.
+- [~] **P3-06** Reviewed observed entries and six ROM-backed RAM copy spans feed `native/analysis.toml`. Latest race-start callback `0x083184FC` was added and rebuilt; its native race-start rerun is pending. Full dynamic map/Ghidra integration remains open.
 - [ ] **P3-07** If mstan pipeline fails structurally on this ROM (documented reasons), activate fallback: build `sp00nznet/gbarecomp` and repeat P3-02..P3-05 there. Record the comparison in §8.3 as a decision update.
 
 ### Phase P4 — Hardware Layer Completion (Runtime)
@@ -316,7 +316,7 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 
 ### Phase P5 — Audio (GAX 3.03A)
 - [ ] **P5-01** Baseline: hardware-fidelity audio path (DirectSound FIFO A/B + PSG) — capture reference audio from mGBA for 3 scenes; spectral/A-B comparison.
-- [ ] **P5-02** GAX state instrumentation: from P2-05 map GAX song/voice structures; log voice state while playing under mGBA.
+- [~] **P5-02** GAX state instrumentation: from P2-05 map GAX song/voice structures; log voice state while playing under mGBA. Mutable relocated operands identified and guarded in native build; full voice/song state instrumentation pending (Session 007).
 - [ ] **P5-03** Optional GAX shadow mixer (float mixing from GAX voice state) with continuous cross-check against the hardware path; degrade loudly, never silently (pattern from JRickey).
 - [ ] **P5-04** Output resampling (band-limited), DC blocker, soft-clip; keep "faithful" mode default.
 
@@ -328,13 +328,13 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 - [ ] **P6-05** Progress metrics: add objdiff/decomp.dev-style reporting (even a simple `progress.py` counting matched functions/bytes) and publish locally.
 
 ### Phase P7 — Verification & Acceptance
-- [ ] **P7-01** Build the differential harness: boot both mGBA and native build from identical states; compare per-frame framebuffer hashes (allow configurable tolerance for presentation-only differences) and EWRAM/IWRAM hash diffs at checkpoints.
+- [~] **P7-01** Differential harness started: `tools/recomp/probe.py` and `compare.py` compare strict-native and framework-interpreter checkpoint hashes/state/cycles. Boot/title/menu/course selection comparisons pass. Independent mGBA integration and per-frame acceptance remain required.
 - [ ] **P7-02** Lockstep function conformance (where feasible, borrowing sp00nznet's harness design): interpreter vs native per function on randomized inputs.
 - [ ] **P7-03** Regression suite: scripted scenarios (title, each mode, save/load, crash recovery) run headless in CI on every change; store results in `docs/verification/`.
 - [ ] **P7-04** Performance gate: 60 fps with headroom on a mid-range PC; profile hot paths.
 
 ### Phase P8 — Packaging & Release Engineering
-- [ ] **P8-01** Launcher flow: user points at own ROM (hash-checked) + BIOS (if required by chosen stack); no bundled game data.
+- [~] **P8-01** Local build/launch gates implemented: builder checks ROM SHA1/SHA256 from §1.1, host checks ROM SHA256 and exact compiled BIOS image, runtime checks SHA1. Player-facing release packaging remains pending; generated code/assets stay local.
 - [ ] **P8-02** Save migration/import from mGBA for players.
 - [ ] **P8-03** Release checklist (legal + technical): no derived code in artifacts; reproducibility notes; credits for all tools/communities. Consider the mstan `.gbamod` package format for optional enhancements.
 - [ ] **P8-04** Optional stretch: widescreen, 60 FPS render mod, netplay from framework support.
@@ -429,8 +429,8 @@ E:\Project\Decopm\
 |---|---|---|---|---|
 | M0 | Research + plan + baseline documented | P0 | `[x]` | RESEARCH_AND_PLAN.md v0.2.0; dump verified vs No-Intro; recon report committed |
 | M1 | Toolchain installed & verified | P0 | `[x]` | §8.4; headless Ghidra, mGBA, gbarecomp, objdiff, m2c, MSYS2/MinGW all verified 2026-10-11; Track B (WSL/agbcc) deferred to P6-01 |
-| M2 | Static function/data map + entries.txt | P1–P2 | `[ ]` | docs/recon/*, entries.txt |
-| M3 | Native build boots to title screen | P3 | `[ ]` | screenshot + frame log |
+| M2 | Static function/data map + entries.txt | P1–P2 | `[~]` | Candidate inventory/reviewed RAM metadata; full Ghidra/dynamic map pending |
+| M3 | Native build boots to title screen | P3 | `[x]` | Session 007; strict-native title capture; docs/verification/native_bringup.md |
 | M4 | In-race gameplay + PPU parity | P3–P4 | `[ ]` | differential runs |
 | M5 | Saves round-trip | P4 | `[ ]` | save diff report |
 | M6 | Audio baseline (hardware-fidelity) | P5 | `[ ]` | reference recordings |
@@ -443,14 +443,14 @@ E:\Project\Decopm\
 | Phase | Title | Status | Notes |
 |---|---|---|---|
 | P0 | Scaffolding & baseline | `[x]` | P0-01..P0-08 complete; toolchain verified (§8.4); Track B WSL/agbcc deferred to P6-01 |
-| P1 | Static analysis & map building | `[ ]` | Blocked on tool installs (P0-08) |
-| P2 | Dynamic analysis & coverage | `[ ]` | |
-| P3 | First native bring-up | `[ ]` | |
+| P1 | Static analysis & map building | `[~]` | Candidate inventory and reviewed RAM copies; Ghidra import still pending |
+| P2 | Dynamic analysis & coverage | `[~]` | Native capture/input tools; independent mGBA suite and save tracing pending |
+| P3 | First native bring-up | `[~]` | P3-01..04 verified; strict-native title/menu/course selection; full race pending |
 | P4 | Hardware layer completion | `[ ]` | |
-| P5 | Audio (GAX) | `[ ]` | |
+| P5 | Audio (GAX) | `[~]` | Mutable relocated audio fields identified; audio fidelity not qualified |
 | P6 | Decompilation support track | `[ ]` | |
-| P7 | Verification & acceptance | `[ ]` | |
-| P8 | Packaging & release | `[ ]` | |
+| P7 | Verification & acceptance | `[~]` | Internal native/interpreter checkpoint comparisons pass; mGBA acceptance pending |
+| P8 | Packaging & release | `[~]` | Local ROM/BIOS gates; packaging pending |
 | P9 | Long-term / stretch | `[ ]` | |
 
 ### 8.3 Decision Log (append-only)
@@ -465,6 +465,7 @@ E:\Project\Decopm\
 | D6 | 2026-10-11 | WSL for decomp builds, native Windows for recomp/Ghidra/mGBA | Tooling fit; pret INSTALL guidance | — |
 | D7 | 2026-10-11 | No ROM/BIOS/generated code in VCS ever | Legal hygiene | — |
 | D8 | 2026-10-11 | Dump verification source = No-Intro GBA DAT (daily rebuild mirror `hugo19941994/auto-datfile-generator`); USA revision confirmed a good dump | Reproducible authoritative hash reference; resolves Q1 | — |
+| D9 | 2026-10-13 | Prioritize measured native bring-up before completing Ghidra mapping. Use native TCP/interpreter comparisons as an interim CPU check and a local open-source mGBA BIOS shim + SWI HLE for experimental bring-up. | Correct entry and reviewed RAM copies unlock Track A; no retail BIOS is present. Internal comparisons do not replace independent mGBA acceptance (D3). | P1-first execution order only; D1–D7 unchanged |
 
 *(Future entries: add new rows; if changing D1–D7, add a new row with "Supersedes Dx" and update the roadmap accordingly.)*
 
@@ -486,13 +487,16 @@ E:\Project\Decopm\
 | MSYS2 + MinGW GCC | MSYS2 20260611; GCC 16.1.0; mingw CMake 4.3.3; Ninja 1.13.2 | `C:\msys64\mingw64\bin` | `[x]` 2026-10-11 | installed via `pacman` (49 pkgs); for P3 host build |
 | CMake (host) | 4.4.4 | `C:\Program Files\CMake\bin\cmake.exe` | `[x]` 2026-10-11 | winget |
 | Ninja (host) | 1.13.2 | `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Ninja-build.Ninja_*` | `[x]` 2026-10-11 | winget |
-| SDL2 | — | — | `[ ]` | deferred to P3-01 (vcpkg or FetchContent in host app) |
+| SDL2 | 2.32.10-1 | `C:\msys64\mingw64` | `[x]` 2026-10-13 | native SDL window run verified (Session 007) |
 | devkitARM / binutils-arm-none-eabi | — | — | `[ ]` | Track B; deferred to P6-01 |
 | agbcc | — | — | `[ ]` | requires WSL distro; deferred to P6-01 |
 | decomp-permuter (+arm) | — | — | `[ ]` | P6-03 |
 | gbarecomp (sp00nznet) | — | — | `[ ]` | fallback (P3-07) |
 | gba-recomp (JRickey) | git reference | — | `[ ]` | reference only; gamedb checked — no coverage of this title |
 | WSL | engine present, default v2 | system | `[~]` 2026-10-11 | **no distro installed** (`wsl -l -v`); needed for Track B (P6-01) |
+| gbarecomp source | `5e89943528aee7bc1c399bdbd035364a4b41dd10` | `tools/bin/gbarecomp-src` | `[x]` 2026-10-13 | core/net/rbengine submodules present; latest native host build passed; Android SDL checkout deferred |
+| ARM binutils | 2.46.0.20260210 | `tools/bin/arm-tools/mingw64/bin` | `[x]` 2026-10-13 | extracted MSYS2 package; disassembly/open BIOS assembly verified |
+| Experimental BIOS shim | mGBA 0.10.5 open-source assembly | `tools/bin/hle-bios.s`; `work/open-bios/` | `[~]` 2026-10-13 | source/image hashes and limitations in bring-up report; not retail-BIOS qualification |
 
 ### 8.5 Open Questions
 
@@ -566,14 +570,26 @@ E:\Project\Decopm\
 - Publication scope is documentation and the `.gitignore` comment only; local ROMs, downloaded tools, and generated reports are excluded. Commit/push results are recorded by Git and the chat handoff.
 - Blockers: none at preparation. Next actions: verify the pushed commit; project priorities remain in §8.7.
 
+**Session 007 — 2026-10-13 — Native bring-up checkpoint and commit (agent: Codex, chat 01a130b9-d5df-7d70-b9da-899bbed82af9)**
+- Baseline: recomputed ROM SHA1/SHA256 matched §1.1 before work. Corrected stale active P0/P1 summaries using verified Session 002 toolchain evidence; preserved historical entries.
+- Entry finding: CLI 0.2.0 assumed `0x080000C0` and found one undefined function. Actual header target `0x080000C8` discovers 3,747 candidate functions and compiles the library. Source framework pinned at `5e89943528aee7bc1c399bdbd035364a4b41dd10`; latest analysis finds 3,873 candidates (173 ARM / 3,700 Thumb), with ten undefined findings still open.
+- Added asset-free Windows host/configuration, dual-ROM-hash-gated build tooling, exact compiled-BIOS launch gate, reviewed relocations, native TCP/RAM capture/comparison tooling, hand-authored input scenarios and synthetic checks. Generated game/BIOS code, binaries, screenshots, memory captures and caches remain ignored/local.
+- Verified strict-native checkpoints: licensing at 120 frames, title at 600, main menu at 932, Wild Race course selection at 1,238. Successful runs report zero dispatch misses/interpreted fallback instructions, with healing/cache disabled. CPU/framebuffer/RAM/PPU/cycle/IRQ comparisons against the framework interpreter pass; the initial 120-frame capture lacks EWRAM. Evidence/commands: `docs/verification/native_bringup.md`, `work/native/*/capture.json`, runtime/build logs in `work/native/`, orchestration log `work/native-bootstrap.log`.
+- RAM code: six reviewed ROM-backed copy spans; the audio span changes four shift fields and four branch conditions. Generic AOT operand handling reads these fields, guards all other opcode fields and preserves native arithmetic/control flow. `python tools/recomp/test_build.py`: four tests pass. `python tools/recomp/test_ram_fields.py`: two tests pass, including compiled execution across all 32 LSR encodings and mutation rejection.
+- Host evidence: SDL2 2.32.10 installed; bounded `--window --frames 120` run presented 120 frames in 2.011117 seconds (59.668 fps), zero unmapped/unhandled IO accesses, fully static. Latest rebuild after the reviewed Thumb callback `0x083184FC` passed; native race-start rerun pending.
+- BIOS/oracle limitations: no retail BIOS present. Experimental mGBA 0.10.5 open-source shim assembled locally and used with SWI HLE; hashes/provenance/limitations documented in bring-up report. mGBA GDB scaffold timed out without a port-2345 handshake. ARM GCC/GDB package installation failed on network/DNS errors with no package upgrades; extracted ARM binutils work. Shared-runtime interpreter comparisons do not satisfy independent mGBA acceptance.
+- Race evidence: interpreter-only 1,840-frame scenario reached the Pacific Highway starting grid. Last native race-start attempt missed `0x083184FC`; seed added and rebuilt, further native verification remains required. Save type remains unknown. Full races, audio fidelity, other modes, save round-trip and release packaging remain open.
+- Handoff: user requested documentation/commit to end the session. Commit scope is hand-written source/tooling/configuration/input schedules and permitted documentation only. See §8.7 to resume; overall goal remains unfinished.
+
 ### 8.7 Next Actions (Top Priority Queue)
 
-1. **P1-01** Install a GBA loader extension into Ghidra (build `SiD3W4y/GhidraGBA`, or use `RetroReversing` precompiled compatible with Ghidra 12.x / JDK 21); import the ROM; verify function discovery + memory map.
-2. **P1-02..P1-05** Library signature pass (`gba_lib_func_sig`), function inventory export, ARM/Thumb distribution, code/data boundary; anchor the recon strings (`0x01F7D0` level-name blob, GAX block `0x3ED134`, MagicPockets `0x3EE0B8`) via xrefs.
-3. **P2-01/P2-02** mGBA: verify GDB stub (port 2345) and stand up the Lua trace suite skeleton (coverage + MMIO + `0x0E000000` save-chip + IWRAM diff) under `tools/mgba/`.
-4. **P2-04** Scripted playthrough set → dynamic function map → `entries.txt` for the recompiler.
-5. **Track B prep (at P6-01):** install a WSL distro (`wsl --install -d Ubuntu`), build `pret/agbcc`, add devkitARM/binutils-arm-none-eabi.
-6. **Optional hardening:** GitHub Support request to purge unreferenced object `e3160957abb1f37c64dc0f7e3c1632e4b89b97f4` (see `docs/legal.md` §5).
+1. **P3-05/P3-06:** rerun `python tools/recomp/probe.py --bios work/open-bios/hle-bios.bin --scenario tools/recomp/scenarios/wild_race.json --output work/native/static-wild-race`. Latest executable contains the reviewed `0x083184FC` callback seed; validate it, burn down subsequent strict misses, and get native race-start/driving evidence. Do not count interpreter captures as native gameplay.
+2. **P7-01/P2-01/P2-02:** fix mGBA headless GDB startup or use supported scripting/core APIs; establish independent boot/menu/race frame/RAM comparisons. Existing `compare.py` uses the framework interpreter only.
+3. **P2-06/P4-05:** determine save protocol dynamically, then perform a real mGBA/native save round-trip. Static signature scan returned unknown; do not guess the chip.
+4. **P5-01/P2-05:** verify actual audio/FIFO output and driver state. Reviewed mutable native audio operands are guarded, but output fidelity is unqualified. Review experimental BIOS services and HLE timing before acceptance.
+5. **P1-01..P1-07:** complete Ghidra loader, signatures and cross-references as Track A support. Candidate counts are not a full function map. Track B toolchain remains deferred to P6-01.
+6. **P7/P8:** expand scenarios to every single-player mode, complete races, crash recovery and save/load, then performance/packaging gates. Keep all ROM/BIOS/generated code/assets local.
+7. **Optional hardening:** GitHub Support purge request for historical unreferenced ROM objects (docs/legal.md §5).
 
 ### 8.8 Evidence Index (paths to key artifacts)
 
@@ -587,6 +603,11 @@ E:\Project\Decopm\
 | Dump verification | `docs/recon/nointro_verification.md` | No-Intro match, Q1 resolution |
 | Legal policy | `docs/legal.md` | hard rules + incident log |
 | Toolchain (P0-08) | §8.4 table + `tools\bin\` (git-ignored) + `C:\msys64` | installed + verified 2026-10-11 |
+| Native bring-up report | `docs/verification/native_bringup.md` | strict checkpoints, limitations and resume commands |
+| Hand-written host/configuration | `native/` | no generated game code or assets |
+| Build/capture/verification tools | `tools/recomp/`; `tools/mgba/` | hash gates, AOT field guards, input schedules, tests and GDB scaffold |
+| Native executable (local only) | `work/native/build/RoadRashJailbreakRecomp.exe` | ignored; latest rebuild passed; full native race unverified |
+| Captures/build evidence (local only) | `work/native/`; `work/native-bootstrap.log` | ignored; never publish memory/screenshot/code artifacts |
 | Function map / entries | (pending) `work/recon/entries.txt` | generated; uncommitted by default |
 | Differential reports | (pending) `docs/verification/` | committed summaries |
 

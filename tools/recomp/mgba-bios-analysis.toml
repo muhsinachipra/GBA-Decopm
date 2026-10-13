@@ -1,0 +1,9 @@
+# Applies only to the locally assembled mGBA 0.10.5 HLE BIOS image.
+[identity]
+sha1 = "73528a5d6ea2c163e82956b1eee3b6116700d5c8"
+
+[[extra_func]]
+addr = 0x00000194
+mode = "arm"
+name = "mgba_irq_return"
+note = "IRQ dispatcher returns here after its indirect LDR pc; observed strict miss"

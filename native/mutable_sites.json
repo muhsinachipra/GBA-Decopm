@@ -1,0 +1,10 @@
+[
+  {"pc": "0x02001148", "source": "0x0831D1D0", "field": "lsr_immediate"},
+  {"pc": "0x0200114C", "source": "0x0831D1D4", "field": "lsr_immediate"},
+  {"pc": "0x020011C4", "source": "0x0831D24C", "field": "lsr_immediate"},
+  {"pc": "0x020011C8", "source": "0x0831D250", "field": "lsr_immediate"},
+  {"pc": "0x02001180", "source": "0x0831D208", "field": "condition"},
+  {"pc": "0x0200118C", "source": "0x0831D214", "field": "condition"},
+  {"pc": "0x020011A4", "source": "0x0831D22C", "field": "condition"},
+  {"pc": "0x020011B0", "source": "0x0831D238", "field": "condition"}
+]

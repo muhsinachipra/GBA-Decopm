@@ -4,9 +4,9 @@ This project aims to run the USA GBA version of **Road Rash: Jailbreak** nativel
 
 ## Current status
 
-The project is in early development. The ROM baseline has been verified, reconnaissance tooling is available, and the core analysis/recompilation toolchain has been installed locally. The next step is Ghidra GBA import and static analysis, followed by dynamic coverage collection.
+The Windows host builds locally and reaches the title and Wild Race course-selection menus with strict static dispatch. Internal comparisons against the framework interpreter pass at several boot/menu checkpoints. Full races, independent mGBA comparisons, saves, audio fidelity, and the remaining modes still need verification.
 
-**There is no playable native build or release package yet.** See [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) Sections 8.6–8.7 for the latest evidence and next actions.
+**There is no release package yet; the local native build is experimental.** See [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) Sections 8.6–8.7 and the [bring-up report](docs/verification/native_bringup.md) for evidence and resume commands.
 
 ## Start here
 
@@ -36,7 +36,27 @@ The existing [reconnaissance script](tools/recon/rom_recon.py) uses Python's sta
    python tools/recon/rom_recon.py "Road Rash - Jailbreak (USA).gba" --out work/recon/rom_recon_report.md
    ```
 
-An optional `--nointro-dat` argument accepts a local No-Intro DAT for cross-checking. This script produces a reconnaissance report; the native game build remains a future milestone.
+An optional `--nointro-dat` argument accepts a local No-Intro DAT for cross-checking.
+
+## Local native build
+
+The [build wrapper](tools/recomp/build.py) verifies both ROM hashes from PROJECT_CONTEXT.md, generates source under ignored `work/`, and builds the [hand-written Windows host](native/main.cpp). The host checks the ROM and the BIOS image translated into that build before launching.
+
+Use the pinned `mstan/gbarecomp` checkout at `tools/bin/gbarecomp-src`, revision `5e89943528aee7bc1c399bdbd035364a4b41dd10`, with its `external/arm-recomp-core`, `external/recomp-net`, and `external/rbengine` submodules initialized. Install MSYS2 MinGW GCC, CMake, Ninja and SDL2; the verified local paths are in PROJECT_CONTEXT.md §8.4. Downloaded dependencies are not included in this repository.
+
+```powershell
+python tools/recomp/build.py --bios path/to/your/local-bios.bin
+```
+
+For the experimental open-source BIOS path used during bring-up, see the [reproduction instructions](docs/verification/native_bringup.md). That path needs the pinned mGBA source and local ARM binutils. A retail BIOS build still requires its own verified analysis/coverage; neither BIOS backend has full-game acceptance evidence yet.
+
+Launch a matching local build with:
+
+```powershell
+work/native/build/RoadRashJailbreakRecomp.exe --rom "Road Rash - Jailbreak (USA).gba" --bios work/open-bios/hle-bios.bin --bios-hle --window
+```
+
+All generated game/BIOS code, binaries, captures, saves and assets remain local. The repository contains only the host, hand-written tooling/configuration, input schedules, documentation and permitted reports.
 
 ## Contributing
 
