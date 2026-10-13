@@ -1,8 +1,9 @@
 # Native bring-up checkpoint — 2026-10-13
 
 The Windows host builds locally and executes boot, title, main menu, Wild Race
-introduction, player selection, and first-course selection with strict static
-dispatch. **A full race and the v1.0 acceptance criteria remain unverified.**
+introduction, player selection, course selection, and active Wild Race driving
+with strict static dispatch. **A complete race, independent parity, and the
+v1.0 acceptance criteria remain unverified.**
 
 ## Verified evidence
 
@@ -26,12 +27,26 @@ reported zero dispatch misses and zero interpreted fallback instructions.
 | 600 | Title screen during fade | Framebuffer, IWRAM, EWRAM, CPU registers, PPU state, cycles and IRQ count match |
 | 932 | Main menu after Start | Same complete checkpoint comparison passes |
 | 1,238 | Wild Race course selection | Same complete checkpoint comparison passes |
+| 2,140 | Active Wild Race driving; rider reaches 182 mph | Exact internal framebuffer/RAM/CPU/PPU/cycle/IRQ comparison passes at frame 2,139 |
 
 The comparison reference here is **the framework's interpreter**, using the
 same hardware runtime and experimental BIOS backend. This establishes CPU
 translation agreement at those checkpoints. It is **not independent mGBA
 differential verification**, and does not qualify PPU/audio fidelity.
 The debug server's final frame index is one less than the requested count.
+
+The 2,140-frame strict-static capture reports `FULLY_STATIC`, zero dispatch
+misses, zero interpreted instructions, and zero healed native functions. Its
+scenario holds A after course selection to reach active driving. The
+independent mGBA 0.10.5 Lua replay uses one extra frame to align the CPU
+checkpoint. `tools/recomp/compare_mgba.py` confirms the ROM identity, input
+schedule, requested frame count, and CPU registers r0-r14 match. The independent
+comparison is **not yet accepted**: 11,634 of 38,400 framebuffer pixels differ;
+4,100 of 32,768 IWRAM bytes and 1,679 of 262,144 EWRAM bytes differ; and PPU
+fields `bg2x`, `bg2y`, `bg3pa`, `bg3pd`, and `dispstat` differ. The aligned
+comparison outputs and memory snapshots remain local under
+`work/native/static-wild-race-2140/` and
+`work/native/mgba-wild-race-A-2141/`.
 
 Selected framebuffer SHA256 evidence:
 
@@ -47,7 +62,7 @@ unhandled IO accesses. This verifies window bring-up, not a race performance gat
 
 ## RAM-installed code
 
-Six reviewed ROM-backed copy spans are recorded in `native/analysis.toml`.
+Eight reviewed ROM-backed copy spans are recorded in `native/analysis.toml`.
 Additional observed entries are hand-authored there; generated maps stay private.
 `tools/recomp/map_iwram.py` locates a unique 32-byte RAM anchor in the exact ROM,
 extends the identical span, and emits address/size/hash metadata for review.
@@ -91,18 +106,31 @@ python tools/recomp/test_ram_fields.py
 python tools/recomp/probe.py --bios work/open-bios/hle-bios.bin --scenario tools/recomp/scenarios/wild_course.json --output work/native/static-wild-course
 python tools/recomp/probe.py --bios work/open-bios/hle-bios.bin --interp --scenario tools/recomp/scenarios/wild_course.json --output work/native/interp-wild-course
 python tools/recomp/compare.py work/native/static-wild-course/capture.json work/native/interp-wild-course/capture.json
+python tools/recomp/probe.py --bios work/open-bios/hle-bios.bin --scenario tools/recomp/scenarios/wild_race.json --output work/native/static-wild-race-2140
+python tools/recomp/probe.py --bios work/open-bios/hle-bios.bin --interp --scenario tools/recomp/scenarios/wild_race.json --output work/native/interp-wild-race-2140
+python tools/recomp/compare.py work/native/static-wild-race-2140/capture.json work/native/interp-wild-race-2140/capture.json
 ```
+
+For the independent oracle, load the exact ROM in mGBA 0.10.5, open Tools →
+Scripting, and run `tools/recomp/mgba_oracle.lua`. Compare its local capture
+with:
+
+```powershell
+python tools/recomp/compare_mgba.py work/native/static-wild-race-2140 work/native/mgba-wild-race-A-2141
+```
+
+The comparator currently exits with status 1 because the mismatches listed
+above are still present.
 
 Local evidence: `work/native/*/capture.json`, screenshots and RAM snapshots.
 The orchestration log is `work/native-bootstrap.log`, and build/generation logs are in `work/native/`.
 The window log is `work/native/window120.log`. Never commit these snapshots,
 screenshots, generated sources, executable, or runtime caches.
 
-**Next coverage action:** rerun `wild_race.json` in strict mode. The previous
-race-start attempt stopped at Thumb callback `0x083184FC`. Its function boundary
-was reviewed, the seed was added, and the latest executable rebuilt successfully,
-but that new race-start run has not yet been verified. An interpreter capture at
-1,840 frames reached the Pacific Highway starting grid; this is not native-race evidence.
-
-Then complete native race coverage, independent mGBA comparisons, save-chip
-identification and round-trip, audio verification, other modes, and packaging.
+**Next coverage action:** extend the 2,140-frame `wild_race.json` profile through
+the finish, crash recovery, and other race transitions while keeping strict
+static dispatch enabled. Investigate the measured mGBA RAM/PPU/framebuffer
+mismatches before treating the independent comparison as passing. Then identify
+the save chip and verify a round-trip, qualify audio, cover other modes, and
+complete packaging. A race scene at 182 mph is not evidence of a completed race
+or global static coverage.

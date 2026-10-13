@@ -301,8 +301,8 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 - [x] **P3-02** Generate the hash-gated project. Corrected CLI entry to `0x080000C8`; source framework pinned at `5e89943528aee7bc1c399bdbd035364a4b41dd10`. `tools/recomp/build.py` generates 64 shards with reviewed metadata under ignored `work/native/`.
 - [x] **P3-03** Build native library and host. Corrected CLI library: `work/RRJ_entry_recomp/build/libgbarecomp_game.a`. Latest host rebuild succeeded: `work/native/build/RoadRashJailbreakRecomp.exe`; logs in `work/native/`.
 - [x] **P3-04** Hand-written Windows host and cartridge identity/configuration reach title at 600 frames, main menu at 932, and Wild Race course selection at 1,238 under strict static dispatch. Experimental open-source BIOS backend; independent mGBA qualification remains open. Evidence: `docs/verification/native_bringup.md`.
-- [~] **P3-05** Strict-static burn-down active. Verified boot/menu scenarios have zero dispatch misses/interpreted fallback instructions with healing/cache disabled. Global executed-function/PC coverage percentages remain unmeasured.
-- [~] **P3-06** Reviewed observed entries and six ROM-backed RAM copy spans feed `native/analysis.toml`. Latest race-start callback `0x083184FC` was added and rebuilt; its native race-start rerun is pending. Full dynamic map/Ghidra integration remains open.
+- [~] **P3-05** Strict-static burn-down active. A 2,140-frame Wild Race profile reaches active driving with zero dispatch misses, interpreted instructions, or healed functions. Global executed-function/PC coverage percentages and full race remain unmeasured.
+- [~] **P3-06** Reviewed observed entries and eight ROM-backed RAM copy spans feed `native/analysis.toml`; additional callbacks were reviewed during active-race capture. Full dynamic map/Ghidra integration remains open.
 - [ ] **P3-07** If mstan pipeline fails structurally on this ROM (documented reasons), activate fallback: build `sp00nznet/gbarecomp` and repeat P3-02..P3-05 there. Record the comparison in §8.3 as a decision update.
 
 ### Phase P4 — Hardware Layer Completion (Runtime)
@@ -328,7 +328,7 @@ Performed 2026-10-11 with an inline Python analysis (script kept outside the rep
 - [ ] **P6-05** Progress metrics: add objdiff/decomp.dev-style reporting (even a simple `progress.py` counting matched functions/bytes) and publish locally.
 
 ### Phase P7 — Verification & Acceptance
-- [~] **P7-01** Differential harness started: `tools/recomp/probe.py` and `compare.py` compare strict-native and framework-interpreter checkpoint hashes/state/cycles. Boot/title/menu/course selection comparisons pass. Independent mGBA integration and per-frame acceptance remain required.
+- [~] **P7-01** `probe.py`, `compare.py`, and the mGBA Lua/comparison tools are active. Internal 2,140-frame native/interpreter state comparison passes exactly. Independent mGBA comparison is instrumented but currently differs in framebuffer, RAM, and PPU state; per-frame acceptance remains open.
 - [ ] **P7-02** Lockstep function conformance (where feasible, borrowing sp00nznet's harness design): interpreter vs native per function on randomized inputs.
 - [ ] **P7-03** Regression suite: scripted scenarios (title, each mode, save/load, crash recovery) run headless in CI on every change; store results in `docs/verification/`.
 - [ ] **P7-04** Performance gate: 60 fps with headroom on a mid-range PC; profile hot paths.
@@ -431,7 +431,7 @@ E:\Project\Decopm\
 | M1 | Toolchain installed & verified | P0 | `[x]` | §8.4; headless Ghidra, mGBA, gbarecomp, objdiff, m2c, MSYS2/MinGW all verified 2026-10-11; Track B (WSL/agbcc) deferred to P6-01 |
 | M2 | Static function/data map + entries.txt | P1–P2 | `[~]` | Candidate inventory/reviewed RAM metadata; full Ghidra/dynamic map pending |
 | M3 | Native build boots to title screen | P3 | `[x]` | Session 007; strict-native title capture; docs/verification/native_bringup.md |
-| M4 | In-race gameplay + PPU parity | P3–P4 | `[ ]` | differential runs |
+| M4 | In-race gameplay + PPU parity | P3–P4 | `[~]` | 2,140-frame strict-static Wild Race reaches active riding; internal interpreter parity passes; mGBA framebuffer/RAM/PPU mismatches remain |
 | M5 | Saves round-trip | P4 | `[ ]` | save diff report |
 | M6 | Audio baseline (hardware-fidelity) | P5 | `[ ]` | reference recordings |
 | M7 | Full single-player playability | P7 | `[ ]` | regression suite green |
@@ -444,12 +444,12 @@ E:\Project\Decopm\
 |---|---|---|---|
 | P0 | Scaffolding & baseline | `[x]` | P0-01..P0-08 complete; toolchain verified (§8.4); Track B WSL/agbcc deferred to P6-01 |
 | P1 | Static analysis & map building | `[~]` | Candidate inventory and reviewed RAM copies; Ghidra import still pending |
-| P2 | Dynamic analysis & coverage | `[~]` | Native capture/input tools; independent mGBA suite and save tracing pending |
-| P3 | First native bring-up | `[~]` | P3-01..04 verified; strict-native title/menu/course selection; full race pending |
+| P2 | Dynamic analysis & coverage | `[~]` | Strict-native and mGBA Lua replay tooling; one race comparison measured, save tracing and MMIO write logging pending |
+| P3 | First native bring-up | `[~]` | Strict-static driving verified through 2,140 frames; complete race and global coverage remain open |
 | P4 | Hardware layer completion | `[ ]` | |
 | P5 | Audio (GAX) | `[~]` | Mutable relocated audio fields identified; audio fidelity not qualified |
 | P6 | Decompilation support track | `[ ]` | |
-| P7 | Verification & acceptance | `[~]` | Internal native/interpreter checkpoint comparisons pass; mGBA acceptance pending |
+| P7 | Verification & acceptance | `[~]` | Internal 2,140-frame comparison is exact; independent mGBA race comparison runs but has framebuffer/RAM/PPU mismatches |
 | P8 | Packaging & release | `[~]` | Local ROM/BIOS gates; packaging pending |
 | P9 | Long-term / stretch | `[ ]` | |
 
@@ -497,6 +497,7 @@ E:\Project\Decopm\
 | gbarecomp source | `5e89943528aee7bc1c399bdbd035364a4b41dd10` | `tools/bin/gbarecomp-src` | `[x]` 2026-10-13 | core/net/rbengine submodules present; latest native host build passed; Android SDL checkout deferred |
 | ARM binutils | 2.46.0.20260210 | `tools/bin/arm-tools/mingw64/bin` | `[x]` 2026-10-13 | extracted MSYS2 package; disassembly/open BIOS assembly verified |
 | Experimental BIOS shim | mGBA 0.10.5 open-source assembly | `tools/bin/hle-bios.s`; `work/open-bios/` | `[~]` 2026-10-13 | source/image hashes and limitations in bring-up report; not retail-BIOS qualification |
+| Pillow | 12.2.0 | Python environment | `[x]` 2026-10-13 | used by `tools/recomp/compare_mgba.py` to compare captured PNG pixels |
 
 ### 8.5 Open Questions
 
@@ -581,10 +582,25 @@ E:\Project\Decopm\
 - Race evidence: interpreter-only 1,840-frame scenario reached the Pacific Highway starting grid. Last native race-start attempt missed `0x083184FC`; seed added and rebuilt, further native verification remains required. Save type remains unknown. Full races, audio fidelity, other modes, save round-trip and release packaging remain open.
 - Handoff: user requested documentation/commit to end the session. Commit scope is hand-written source/tooling/configuration/input schedules and permitted documentation only. See §8.7 to resume; overall goal remains unfinished.
 
+**Session 008 — 2026-10-13 — Progress review (agent: Codex, chat 01a13602-a7a0-7fc0-ad40-9d233816fbb1)**
+- Reviewed roadmap, tracker, Session 007 and native bring-up report for the requested progress summary. No implementation or task-status changes.
+- Evidence: recomputed ROM SHA1/SHA256 match §1.1; `git status --short` was clean; latest commit is `f4864ec` (native bring-up checkpoint). Existing evidence verifies native title/menu/course selection; native racing and independent mGBA acceptance remain pending.
+- Blockers and next actions unchanged; resume strict-native race-start coverage first, as listed in §8.7.
+
+**Session 009 — 2026-10-13 — Strict-static Wild Race and mGBA checkpoint (agent: Codex, goal session)**
+- Baseline: recomputed the local ROM SHA1/SHA256; both match §1.1 exactly. No ROM-derived files were added to the commit scope.
+- Extended `wild_race.json` to hold A through active driving; added reviewed observed function entries and two ROM-backed audio-copy spans in `native/analysis.toml` (eight spans total), plus eight mutable-field guards for the relocated audio copy. Updated `compare_mgba.py`, `mgba_oracle.lua`, and the bring-up report.
+- Build evidence: `python tools/recomp/build.py --bios work/open-bios/hle-bios.bin --bios-overlay tools/recomp/mgba-bios-analysis.toml` succeeded after the final analysis metadata additions; it verified the ROM hashes and header entry `0x080000C8`.
+- Strict-native evidence: `python tools/recomp/probe.py --bios work/open-bios/hle-bios.bin --scenario tools/recomp/scenarios/wild_race.json --output work/native/static-wild-race-2140` captured 2,140 frames. Runtime reports `FULLY_STATIC`, zero dispatch misses, zero interpreted instructions, and zero healed native functions. The rider reached active driving (182 mph); this is not a completed race or global coverage evidence.
+- Internal comparison: `python tools/recomp/compare.py work/native/static-wild-race-2140/capture.json work/native/interp-wild-race-2140/capture.json` passed exactly at frame 2,139 for framebuffer, IWRAM, EWRAM, registers, PPU state, cycles, and IRQ count.
+- Independent oracle: mGBA 0.10.5 Lua replay captured 2,141 frames with one alignment frame. `python tools/recomp/compare_mgba.py work/native/static-wild-race-2140 work/native/mgba-wild-race-A-2141` confirms ROM identity, schedule, count, and CPU r0-r14, but returns 1: 11,634/38,400 pixels, 4,100/32,768 IWRAM bytes, 1,679/262,144 EWRAM bytes, and PPU fields `bg2x`, `bg2y`, `bg3pa`, `bg3pd`, `dispstat` differ. Captures remain under ignored `work/native/`.
+- Checks: `python tools/recomp/test_build.py` passed 4 tests; `python tools/recomp/test_ram_fields.py` passed 2 tests; comparator `--help` succeeded; `git diff --check` passed; `git check-ignore` confirmed ROM, BIOS, and capture RAM are ignored. Pillow 12.2.0 is recorded as the PNG comparison dependency.
+- Blockers: complete race/finish and global coverage remain open; mGBA visual/RAM/PPU parity is not achieved; save chip and audio fidelity are unqualified. The older race-start-only summaries in Sessions 007–008 are historical; this entry and the active summaries record the newer verified checkpoint.
+- Next actions: see §8.7. Commit only hand-written tooling/configuration and documentation; leave `.vscode/` and all local game/build/capture data out of version control.
 ### 8.7 Next Actions (Top Priority Queue)
 
-1. **P3-05/P3-06:** rerun `python tools/recomp/probe.py --bios work/open-bios/hle-bios.bin --scenario tools/recomp/scenarios/wild_race.json --output work/native/static-wild-race`. Latest executable contains the reviewed `0x083184FC` callback seed; validate it, burn down subsequent strict misses, and get native race-start/driving evidence. Do not count interpreter captures as native gameplay.
-2. **P7-01/P2-01/P2-02:** fix mGBA headless GDB startup or use supported scripting/core APIs; establish independent boot/menu/race frame/RAM comparisons. Existing `compare.py` uses the framework interpreter only.
+1. **P3-05/P3-06:** extend the strict-static `wild_race.json` run beyond the verified 2,140-frame active-driving checkpoint through race finish, crash recovery, and additional transitions. Preserve scenario-specific zero-miss evidence; global coverage remains unmeasured.
+2. **P7-01/P2-01/P2-02:** resolve the first independent mGBA comparison: 11,634/38,400 pixels, 4,100/32,768 IWRAM bytes, 1,679/262,144 EWRAM bytes, and five listed PPU fields differ although ROM identity, schedule, count, and CPU r0-r14 match. Improve phase alignment/state sampling, then repeat boot/menu/race comparisons. The framework interpreter comparison remains a separate internal check.
 3. **P2-06/P4-05:** determine save protocol dynamically, then perform a real mGBA/native save round-trip. Static signature scan returned unknown; do not guess the chip.
 4. **P5-01/P2-05:** verify actual audio/FIFO output and driver state. Reviewed mutable native audio operands are guarded, but output fidelity is unqualified. Review experimental BIOS services and HLE timing before acceptance.
 5. **P1-01..P1-07:** complete Ghidra loader, signatures and cross-references as Track A support. Candidate counts are not a full function map. Track B toolchain remains deferred to P6-01.
@@ -605,7 +621,7 @@ E:\Project\Decopm\
 | Toolchain (P0-08) | §8.4 table + `tools\bin\` (git-ignored) + `C:\msys64` | installed + verified 2026-10-11 |
 | Native bring-up report | `docs/verification/native_bringup.md` | strict checkpoints, limitations and resume commands |
 | Hand-written host/configuration | `native/` | no generated game code or assets |
-| Build/capture/verification tools | `tools/recomp/`; `tools/mgba/` | hash gates, AOT field guards, input schedules, tests and GDB scaffold |
+| Build/capture/verification tools | `tools/recomp/`; `tools/mgba/` | hash gates, AOT field guards, input schedules, internal and mGBA comparators, Lua oracle and GDB scaffold |
 | Native executable (local only) | `work/native/build/RoadRashJailbreakRecomp.exe` | ignored; latest rebuild passed; full native race unverified |
 | Captures/build evidence (local only) | `work/native/`; `work/native-bootstrap.log` | ignored; never publish memory/screenshot/code artifacts |
 | Function map / entries | (pending) `work/recon/entries.txt` | generated; uncommitted by default |

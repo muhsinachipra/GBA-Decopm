@@ -41,12 +41,26 @@ size = 0x12C
 name = "audio_arm_copy"
 note = "Reviewed ARM audio span; mutable shift and condition fields handled by ram_fields.py"
 
+[[code_copy]]
+runtime_start = 0x02000890
+source_start = 0x0831D178
+size = 0x130
+name = "audio_arm_copy_0890"
+note = "Unique EWRAM race-capture anchor matches the ROM span byte-for-byte; includes the preceding BX LR"
+
 [[extra_func]]
 addr = 0x020010F4
 source_addr = 0x0831D17C
 mode = "arm"
 name = "rrj_ewram_mix_10f4"
 note = "Observed strict-static ARM miss at frame before title"
+
+[[extra_func]]
+addr = 0x02000894
+source_addr = 0x0831D17C
+mode = "arm"
+name = "rrj_ewram_mix_0894"
+note = "Observed strict-static ARM miss during race; source verified by unique full-span EWRAM/ROM match"
 
 [[extra_func]]
 addr = 0x02001168
@@ -62,12 +76,26 @@ size = 0x120
 name = "audio_arm_helper_copy"
 note = "Immutable 0x120-byte audio helper, verified against EWRAM at frame 600"
 
+[[code_copy]]
+runtime_start = 0x02000774
+source_start = 0x0831CE80
+size = 0x120
+name = "audio_arm_helper_copy_0774"
+note = "Race-capture EWRAM copy matches the reviewed 0x120-byte helper; maximal match extends across the next copy's identical BX LR"
+
 [[extra_func]]
 addr = 0x02000FD4
 source_addr = 0x0831CE80
 mode = "arm"
 name = "rrj_ewram_audio_0fd4"
 note = "Observed strict-static ARM miss; disassembly reviewed through return"
+
+[[extra_func]]
+addr = 0x02000774
+source_addr = 0x0831CE80
+mode = "arm"
+name = "rrj_ewram_audio_0774"
+note = "Observed strict-static ARM miss during race; full 0x120-byte source span verified against the EWRAM capture"
 
 [[code_copy]]
 runtime_start = 0x0300367C
@@ -102,3 +130,75 @@ addr = 0x083184FC
 mode = "thumb"
 name = "rrj_race_callback_3184fc"
 note = "Observed strict-static Thumb miss during first-race bring-up; reviewed function boundary"
+
+[[extra_func]]
+addr = 0x08318B08
+mode = "thumb"
+name = "rrj_race_callback_318b08"
+note = "Observed strict-static Thumb miss during race bring-up; boundary reviewed to return at 0x08318B28"
+
+[[extra_func]]
+addr = 0x08318A20
+mode = "thumb"
+name = "rrj_race_callback_318a20"
+note = "Observed strict-static Thumb miss during race bring-up; returns at 0x08318AB0 before its literal pool"
+
+[[extra_func]]
+addr = 0x08318488
+mode = "thumb"
+name = "rrj_race_callback_318488"
+note = "Observed strict-static Thumb miss; separate Thumb routine starts with PUSH and returns at 0x083184EE"
+
+[[extra_func]]
+addr = 0x08318430
+mode = "thumb"
+name = "rrj_race_callback_318430"
+note = "Observed strict-static Thumb miss; standalone routine returns at 0x08318460 before its literal pool"
+
+[[extra_func]]
+addr = 0x08318508
+mode = "thumb"
+name = "rrj_race_callback_318508"
+note = "Observed strict-static Thumb miss; callback prologue and return at 0x08318608 reviewed"
+
+[[extra_func]]
+addr = 0x08318B2C
+mode = "thumb"
+name = "rrj_race_callback_318b2c"
+note = "Observed strict-static Thumb miss; routine returns at 0x08318B6E and uses a literal pool after the return"
+
+[[extra_func]]
+addr = 0x083184F0
+mode = "thumb"
+name = "rrj_race_callback_3184f0"
+note = "Observed strict-static Thumb miss; four-instruction callback returns at 0x083184F8"
+
+[[extra_func]]
+addr = 0x0831846C
+mode = "thumb"
+name = "rrj_race_callback_31846c"
+note = "Observed strict-static Thumb miss; short callback returns at 0x08318486"
+
+[[extra_func]]
+addr = 0x08318330
+mode = "thumb"
+name = "rrj_race_callback_318330"
+note = "Observed strict-static Thumb miss; short handler returns at 0x08318354 before its literal pool"
+
+[[extra_func]]
+addr = 0x08318360
+mode = "thumb"
+name = "rrj_race_callback_318360"
+note = "Observed strict-static Thumb miss; handler restores its frame and returns at 0x0831841C"
+
+[[extra_func]]
+addr = 0x08318860
+mode = "thumb"
+name = "rrj_race_callback_318860"
+note = "Observed strict-static Thumb miss during active Wild Race; callback returns through restored LR at 0x0831889A before literal data and the next prologue at 0x083188A0"
+
+[[extra_func]]
+addr = 0x083188A0
+mode = "thumb"
+name = "rrj_race_handler_3188a0"
+note = "Observed strict-static Thumb miss during active Wild Race; 0x17C-byte handler restores its frame and returns at 0x08318A1C, before its literal and the next handler at 0x08318A20"

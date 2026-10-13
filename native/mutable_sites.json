@@ -6,5 +6,13 @@
   {"pc": "0x02001180", "source": "0x0831D208", "field": "condition"},
   {"pc": "0x0200118C", "source": "0x0831D214", "field": "condition"},
   {"pc": "0x020011A4", "source": "0x0831D22C", "field": "condition"},
-  {"pc": "0x020011B0", "source": "0x0831D238", "field": "condition"}
+  {"pc": "0x020011B0", "source": "0x0831D238", "field": "condition"},
+  {"pc": "0x020008E8", "source": "0x0831D1D0", "field": "lsr_immediate"},
+  {"pc": "0x020008EC", "source": "0x0831D1D4", "field": "lsr_immediate"},
+  {"pc": "0x02000964", "source": "0x0831D24C", "field": "lsr_immediate"},
+  {"pc": "0x02000968", "source": "0x0831D250", "field": "lsr_immediate"},
+  {"pc": "0x02000920", "source": "0x0831D208", "field": "condition"},
+  {"pc": "0x0200092C", "source": "0x0831D214", "field": "condition"},
+  {"pc": "0x02000944", "source": "0x0831D22C", "field": "condition"},
+  {"pc": "0x02000950", "source": "0x0831D238", "field": "condition"}
 ]
